@@ -12,7 +12,10 @@ export function RecoloredCursor({ accent }: RecoloredCursorProps) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 900) return;
+    const coarse = window.matchMedia('(pointer: coarse)').matches;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (coarse || window.innerWidth < 900) return;
+
     setVisible(true);
     let raf = 0;
     let tx = 0;
@@ -24,12 +27,14 @@ export function RecoloredCursor({ accent }: RecoloredCursorProps) {
       tx = event.clientX;
       ty = event.clientY;
       setDot({ x: tx, y: ty });
-      const el = (event.target as Element | null)?.closest('button, a, [data-cursor="interactive"], .tap-target');
-      setInteractive(Boolean(el));
+      const interactiveTarget = (event.target as Element | null)?.closest('button, a, [data-cursor="interactive"], .tap-target');
+      setInteractive(Boolean(interactiveTarget));
     };
+
     const loop = () => {
-      rx += (tx - rx) * 0.2;
-      ry += (ty - ry) * 0.2;
+      const amount = reduced ? 1 : 0.2;
+      rx += (tx - rx) * amount;
+      ry += (ty - ry) * amount;
       setRing({ x: rx, y: ry });
       raf = requestAnimationFrame(loop);
     };
@@ -43,6 +48,7 @@ export function RecoloredCursor({ accent }: RecoloredCursorProps) {
   }, []);
 
   if (!visible) return null;
+
   return (
     <div className="custom-cursor" aria-hidden>
       <div className="custom-cursor__dot" style={{ transform: `translate3d(${dot.x}px, ${dot.y}px, 0)`, background: accent }} />

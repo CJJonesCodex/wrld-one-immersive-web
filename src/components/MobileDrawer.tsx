@@ -20,7 +20,9 @@ interface MobileDrawerProps {
 
 export function MobileDrawer({ open, worlds, activeWorldId, onClose, onNavigate, sound, haptics, sensor, activeAccent }: MobileDrawerProps) {
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
@@ -30,8 +32,15 @@ export function MobileDrawer({ open, worlds, activeWorldId, onClose, onNavigate,
       {open && <button className="mobile-backdrop" onClick={onClose} aria-label="Close menu" />}
       <aside className={`mobile-drawer ${open ? 'is-open' : ''}`}>
         <SensoryControls sound={sound} haptics={haptics} sensor={sensor} activeAccent={activeAccent} compact />
-        <FeaturedWorksIndex worlds={worlds} activeWorldId={activeWorldId} onNavigate={onNavigate} variant="mobile" />
-        <p>Scroll, tilt, and tap to move through the spatial gallery.</p>
+        <FeaturedWorksIndex
+          worlds={worlds}
+          activeWorldId={activeWorldId}
+          onNavigate={(id) => {
+            onNavigate(id);
+            onClose();
+          }}
+          variant="mobile"
+        />
       </aside>
     </>
   );

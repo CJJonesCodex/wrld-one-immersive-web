@@ -8,6 +8,19 @@ export interface ScrollProgressState {
   maxScroll: number;
 }
 
+function getMaxScroll(): number {
+  if (typeof document === 'undefined' || typeof window === 'undefined') return 1;
+  return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+}
+
+export function scrollToProgress(progress: number): void {
+  if (typeof window === 'undefined') return;
+  window.scrollTo({
+    top: clamp01(progress) * getMaxScroll(),
+    behavior: 'smooth',
+  });
+}
+
 export function useScrollProgress(): ScrollProgressState {
   const [state, setState] = useState<ScrollProgressState>({ progress: 0, rawProgress: 0, scrollY: 0, maxScroll: 1 });
 
@@ -17,7 +30,7 @@ export function useScrollProgress(): ScrollProgressState {
 
     const measure = () => {
       const scrollY = window.scrollY;
-      const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const maxScroll = getMaxScroll();
       const rawProgress = scrollY / maxScroll;
       setState({ scrollY, maxScroll, rawProgress, progress: clamp01(rawProgress) });
       raf = 0;
@@ -31,6 +44,7 @@ export function useScrollProgress(): ScrollProgressState {
     measure();
     window.addEventListener('scroll', onScrollOrResize, { passive: true });
     window.addEventListener('resize', onScrollOrResize);
+
     return () => {
       if (raf) window.cancelAnimationFrame(raf);
       window.removeEventListener('scroll', onScrollOrResize);
