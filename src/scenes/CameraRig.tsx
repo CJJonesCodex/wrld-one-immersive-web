@@ -1,61 +1,65 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
-import { CatmullRomCurve3, MathUtils, Vector2, Vector3 } from 'three';
+import * as THREE from 'three';
+import type { FeaturedWorld } from '../types/world';
+import type { PointerIntent } from '../systems/usePointerIntent';
+import type { DeviceSensorState } from '../systems/useDeviceSensor';
 
 interface CameraRigProps {
   progress: number;
-  sensorOffset: { x: number; y: number };
+  pointer: PointerIntent;
+  sensor: DeviceSensorState;
+  activeWorld: FeaturedWorld;
+  reducedMotion: boolean;
 }
 
-export function CameraRig({ progress, sensorOffset }: CameraRigProps) {
-  const { camera, pointer } = useThree();
-  const blendedPointer = useRef(new Vector2(0, 0));
+const CAMERA_POINTS = [
+  { t: 0.0, position: [0, 1.25, 9.8], lookAt: [0, 0.8, 0] },
+  { t: 0.1, position: [0.25, 1.05, 7.4], lookAt: [0, 0.65, -1.2] },
+  { t: 0.2, position: [-1.6, 1.05, 4.6], lookAt: [0.15, 0.55, -2.5] },
+  { t: 0.34, position: [-1.2, 0.95, 2.0], lookAt: [-1.2, 0.7, -2.2] },
+  { t: 0.48, position: [1.35, 0.82, -0.7], lookAt: [1.15, 0.45, -4.3] },
+  { t: 0.62, position: [-1.05, 0.88, -3.8], lookAt: [-0.9, 0.28, -6.4] },
+  { t: 0.76, position: [0.8, 0.72, -6.8], lookAt: [-0.15, 0.35, -8.3] },
+  { t: 0.88, position: [0.15, 0.92, -10.8], lookAt: [0, 0.55, -12.4] },
+  { t: 1.0, position: [0, 1.1, -14.4], lookAt: [0, 0.65, -18.0] },
+] as const;
 
-  const cameraCurve = useMemo(
-    () =>
-      new CatmullRomCurve3([
-        new Vector3(0, 1.75, 11),
-        new Vector3(0.5, 2.0, -22),
-        new Vector3(1.2, 2.3, -58),
-        new Vector3(-1.4, 2.35, -99),
-        new Vector3(1.1, 2.2, -138),
-        new Vector3(-1.0, 2.35, -172),
-        new Vector3(0.2, 2.0, -207),
-      ]),
-    [],
-  );
+export function CameraRig({ progress, pointer, sensor, reducedMotion }: CameraRigProps) {
+  const { camera, size } = useThree();
+  const currentPosition = useRef(new THREE.Vector3(0, 1.25, 9.8));
+  const currentLookAt = useRef(new THREE.Vector3(0, 0.8, 0));
 
-  const lookCurve = useMemo(
-    () =>
-      new CatmullRomCurve3([
-        new Vector3(0, 1.9, -10),
-        new Vector3(0.1, 2.1, -40),
-        new Vector3(-0.4, 2.2, -80),
-        new Vector3(0.6, 2.35, -120),
-        new Vector3(-0.2, 2.25, -164),
-        new Vector3(0, 2.15, -212),
-      ]),
+  const path = useMemo(
+    () => ({
+      pos: new THREE.CatmullRomCurve3(CAMERA_POINTS.map((p) => new THREE.Vector3(...p.position))),
+      look: new THREE.CatmullRomCurve3(CAMERA_POINTS.map((p) => new THREE.Vector3(...p.lookAt))),
+    }),
     [],
   );
 
   useFrame((_, delta) => {
-    const mixedX = pointer.x * 0.76 + sensorOffset.x * 0.24;
-    const mixedY = pointer.y * 0.76 + sensorOffset.y * 0.24;
-    blendedPointer.current.lerp(new Vector2(mixedX, mixedY), 1 - Math.exp(-delta * 2.6));
+    const basePos = path.pos.getPoint(Math.min(1, Math.max(0, progress)));
+    const baseLook = path.look.getPoint(Math.min(1, Math.max(0, progress)));
+    const px = pointer.isTouch ? pointer.smoothX * 0.14 : pointer.smoothX * 0.18;
+    const py = pointer.isTouch ? pointer.smoothY * 0.08 : pointer.smoothY * 0.1;
+    const sx = sensor.enabled ? sensor.tiltX * 0.16 : 0;
+    const sy = sensor.enabled ? sensor.tiltY * 0.08 : 0;
 
-    const path = MathUtils.clamp(progress, 0, 1);
-    const curvePos = cameraCurve.getPoint(path);
-    const lookPos = lookCurve.getPoint(path);
-    const drift = Math.sin(path * Math.PI * 6) * 0.08;
+    const damp = reducedMotion ? 12 : 4.5;
+    currentPosition.current.x = THREE.MathUtils.damp(currentPosition.current.x, basePos.x + px + sx, damp, delta);
+    currentPosition.current.y = THREE.MathUtils.damp(currentPosition.current.y, basePos.y + py + sy, damp, delta);
+    currentPosition.current.z = THREE.MathUtils.damp(currentPosition.current.z, basePos.z, damp, delta);
 
-    const target = new Vector3(
-      curvePos.x + blendedPointer.current.x * 0.24 + drift,
-      curvePos.y + blendedPointer.current.y * 0.18,
-      curvePos.z,
-    );
+    currentLookAt.current.lerp(baseLook, reducedMotion ? 0.2 : 0.08);
 
-    camera.position.lerp(target, 1 - Math.exp(-delta * 2.4));
-    camera.lookAt(lookPos.x + blendedPointer.current.x * 0.11, lookPos.y + blendedPointer.current.y * 0.08, lookPos.z);
+    camera.position.copy(currentPosition.current);
+    const nextFov = size.width < 821 ? 46 : 42;
+    if (camera instanceof THREE.PerspectiveCamera && camera.fov !== nextFov) {
+      camera.fov = Math.min(50, nextFov);
+      camera.updateProjectionMatrix();
+    }
+    camera.lookAt(currentLookAt.current);
   });
 
   return null;

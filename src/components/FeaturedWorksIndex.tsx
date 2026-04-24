@@ -1,41 +1,27 @@
-import type { FeaturedWorld } from '../data/featuredWorlds';
+import type { FeaturedWorld, WorldId } from '../types/world';
 
 interface FeaturedWorksIndexProps {
   worlds: FeaturedWorld[];
-  activeIndex: number;
-  collapsed: boolean;
-  onToggleCollapse: () => void;
-  onSelect: (index: number) => void;
+  activeWorldId: WorldId;
+  onNavigate: (worldId: WorldId) => void;
+  variant?: 'desktop' | 'mobile';
 }
 
-export function FeaturedWorksIndex({ worlds, activeIndex, collapsed, onToggleCollapse, onSelect }: FeaturedWorksIndexProps) {
+export function FeaturedWorksIndex({ worlds, activeWorldId, onNavigate, variant = 'desktop' }: FeaturedWorksIndexProps) {
   return (
-    <nav className={`featured-index ${collapsed ? 'collapsed' : ''}`} aria-label="Featured worlds index">
-      <button
-        type="button"
-        className="featured-index-toggle"
-        onClick={onToggleCollapse}
-        aria-label="Toggle featured worlds list"
-        data-cursor="interactive"
-      >
-        Featured Worlds
-      </button>
-      <ol>
-        {worlds.map((world, index) => (
-          <li key={world.id}>
-            <button
-              type="button"
-              className={activeIndex === index ? 'active' : ''}
-              aria-label={`Go to ${world.title}`}
-              onClick={() => onSelect(index)}
-              data-cursor="interactive"
-            >
-              <span>{world.indexLabel}</span>
-              <em>{world.title}</em>
-            </button>
-          </li>
-        ))}
-      </ol>
+    <nav className="featured-index" data-variant={variant}>
+      <p className="featured-index__heading">Featured Worlds</p>
+      {worlds.map((world) => (
+        <button
+          key={world.id}
+          className={`featured-index__row tap-target ${world.id === activeWorldId ? 'is-active' : ''}`}
+          onClick={() => onNavigate(world.id)}
+          aria-label={`Navigate to ${world.title}`}
+        >
+          <span>{world.indexLabel}</span>
+          <span>{world.title}</span>
+        </button>
+      ))}
     </nav>
   );
 }

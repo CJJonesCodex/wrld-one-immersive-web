@@ -1,27 +1,27 @@
-import { useCallback, useState } from 'react';
+import { useMemo, useState } from 'react';
 
-export function useHaptics() {
+export interface HapticsState {
+  enabled: boolean;
+  supported: boolean;
+  toggle: () => void;
+  pulse: (duration?: number) => void;
+}
+
+export function useHaptics(): HapticsState {
+  const supported = useMemo(() => typeof navigator !== 'undefined' && 'vibrate' in navigator, []);
   const [enabled, setEnabled] = useState(false);
-  const supported = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
 
-  const toggle = useCallback(() => {
-    setEnabled((prev) => {
-      const next = !prev;
-      if (next && supported) {
-        navigator.vibrate?.(16);
-      }
-      return next;
-    });
-  }, [supported]);
-
-  const pulse = useCallback(
-    (pattern: number | number[] = 8) => {
-      if (enabled && supported) {
-        navigator.vibrate?.(pattern);
+  return {
+    enabled,
+    supported,
+    toggle: () => setEnabled((prev) => !prev),
+    pulse: (duration = 12) => {
+      if (!supported || !enabled || typeof navigator === 'undefined') return;
+      try {
+        navigator.vibrate(duration);
+      } catch {
+        // no-op
       }
     },
-    [enabled, supported],
-  );
-
-  return { enabled, supported, toggle, pulse };
+  };
 }
