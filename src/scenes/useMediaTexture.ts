@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import type { FeaturedWorldMedia, QualityLevel } from '../types/world';
 
 interface UseMediaTextureArgs {
   media: FeaturedWorldMedia;
   allowVideo: boolean;
-  active: boolean;
+  isActive: boolean;
+  isNearActive: boolean;
   quality: QualityLevel;
 }
 
@@ -16,60 +17,86 @@ interface UseMediaTextureResult {
   error: string | null;
 }
 
-export function useMediaTexture({ media, allowVideo, active }: UseMediaTextureArgs): UseMediaTextureResult {
+export function useMediaTexture({ media, allowVideo, isActive, isNearActive, quality }: UseMediaTextureArgs): UseMediaTextureResult {
   const [result, setResult] = useState<UseMediaTextureResult>({ texture: null, mode: 'procedural', ready: false, error: null });
   const loader = useMemo(() => new THREE.TextureLoader(), []);
+  const currentTexture = useRef<THREE.Texture | null>(null);
 
   useEffect(() => {
     let disposed = false;
-    let video: HTMLVideoElement | null = null;
-    let tex: THREE.Texture | null = null;
+    let videoElement: HTMLVideoElement | null = null;
+    let videoTexture: THREE.VideoTexture | null = null;
+
+    const clearTexture = () => {
+      currentTexture.current?.dispose();
+      currentTexture.current = null;
+    };
 
     const loadPoster = () => {
       if (!media.poster) {
         setResult({ texture: null, mode: 'procedural', ready: true, error: null });
         return;
       }
+
       loader.load(
         media.poster,
-        (loaded) => {
-          if (disposed) return;
-          loaded.colorSpace = THREE.SRGBColorSpace;
-          tex = loaded;
-          setResult({ texture: loaded, mode: 'poster', ready: true, error: null });
+        (texture) => {
+          if (disposed) {
+            texture.dispose();
+            return;
+          }
+          clearTexture();
+          texture.colorSpace = THREE.SRGBColorSpace;
+          currentTexture.current = texture;
+          setResult({ texture, mode: 'poster', ready: true, error: null });
         },
         undefined,
-        () => setResult({ texture: null, mode: 'procedural', ready: true, error: 'poster' }),
+        () => setResult({ texture: null, mode: 'procedural', ready: true, error: 'poster-load-failed' }),
       );
     };
 
-    if (allowVideo && (media.webm || media.mp4)) {
-      video = document.createElement('video');
-      video.muted = true;
-      video.loop = true;
-      video.playsInline = true;
-      video.preload = 'metadata';
-      video.src = media.webm ?? media.mp4 ?? '';
-      if (active) {
-        video.play().catch(() => loadPoster());
-      }
-      tex = new THREE.VideoTexture(video);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      setResult({ texture: tex, mode: 'video', ready: true, error: null });
-    } else {
+    const canUseVideo =
+      allowVideo &&
+      quality !== 'low' &&
+      (isActive || (quality === 'high' && isNearActive)) &&
+      Boolean(media.webm || media.mp4);
+
+    if (canUseVideo) {
+      videoElement = document.createElement('video');
+      videoElement.muted = true;
+      videoElement.loop = true;
+      videoElement.playsInline = true;
+      videoElement.preload = 'metadata';
+      videoElement.src = media.webm ?? media.mp4 ?? '';
+
+      videoTexture = new THREE.VideoTexture(videoElement);
+      videoTexture.colorSpace = THREE.SRGBColorSpace;
+      clearTexture();
+      currentTexture.current = videoTexture;
+      setResult({ texture: videoTexture, mode: 'video', ready: true, error: null });
+
+      videoElement.play().catch(() => {
+        if (!disposed) loadPoster();
+      });
+    } else if (isActive || isNearActive) {
       loadPoster();
+    } else {
+      setResult({ texture: null, mode: 'procedural', ready: true, error: null });
     }
 
     return () => {
       disposed = true;
-      if (video) {
-        video.pause();
-        video.removeAttribute('src');
-        video.load();
+      if (videoElement) {
+        videoElement.pause();
+        videoElement.removeAttribute('src');
+        videoElement.load();
       }
-      tex?.dispose();
+      videoTexture?.dispose();
+      if (currentTexture.current === videoTexture) {
+        currentTexture.current = null;
+      }
     };
-  }, [active, allowVideo, loader, media.mp4, media.poster, media.webm]);
+  }, [allowVideo, isActive, isNearActive, loader, media.mp4, media.poster, media.webm, quality]);
 
   return result;
 }

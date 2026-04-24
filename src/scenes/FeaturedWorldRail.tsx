@@ -1,4 +1,3 @@
-import { featuredWorlds } from '../data/featuredWorlds';
 import type { FeaturedWorld, QualityLevel, WorldId } from '../types/world';
 import { getActiveStrength } from '../utils/math';
 import { PremiumGlassCard } from './PremiumGlassCard';
@@ -11,27 +10,45 @@ interface FeaturedWorldRailProps {
   quality: QualityLevel;
   onSelectWorld: (worldId: WorldId) => void;
   haptics: HapticsState;
+  showCardLabels: boolean;
+  showCardViewButtons: boolean;
+  phase: 'hero' | 'intro' | 'rail' | 'focus' | 'bloom';
+  mobileDrawerOpen: boolean;
+  detailOpen: boolean;
+  isMobile: boolean;
 }
 
-export function FeaturedWorldRail({ worlds, activeWorld, progress, quality, onSelectWorld, haptics }: FeaturedWorldRailProps) {
-  const activeNear = worlds.filter((world) => getActiveStrength(progress, world.scene.focusRange) > 0.35).slice(0, quality === 'high' ? 2 : 1);
+export function FeaturedWorldRail({ worlds, activeWorld, progress, quality, onSelectWorld, haptics, showCardLabels, showCardViewButtons, phase, mobileDrawerOpen, detailOpen, isMobile }: FeaturedWorldRailProps) {
+  const maxNearActive = quality === 'high' ? 2 : quality === 'medium' ? 1 : 0;
+  const nearActive = worlds
+    .filter((world) => world.id !== activeWorld.id)
+    .map((world) => ({ world, strength: getActiveStrength(progress, world.scene.focusRange) }))
+    .filter((item) => item.strength > 0.34)
+    .sort((a, b) => b.strength - a.strength)
+    .slice(0, maxNearActive)
+    .map((item) => item.world.id);
+
+  const hideHtml = detailOpen || (isMobile && mobileDrawerOpen);
 
   return (
     <group>
       {worlds.map((world) => {
         const activeStrength = getActiveStrength(progress, world.scene.focusRange);
-        const active = world.id === activeWorld.id;
-        const nearActive = activeStrength > 0.35;
-        const allowVideo = quality !== 'low' && (active || activeNear.some((near) => near.id === world.id));
+        const isActive = world.id === activeWorld.id;
+        const isNearActive = nearActive.includes(world.id);
+
         return (
           <PremiumGlassCard
             key={world.id}
             world={world}
+            activeWorldId={activeWorld.id}
             activeStrength={activeStrength}
-            active={active}
-            nearActive={nearActive}
+            isActive={isActive}
+            isNearActive={isNearActive || phase === 'hero'}
             quality={quality}
-            allowVideo={allowVideo}
+            allowVideo={quality !== 'low' && (isActive || isNearActive)}
+            showLabels={!hideHtml && phase !== 'hero' && showCardLabels && (!isMobile || isActive)}
+            showViewButton={!hideHtml && phase !== 'hero' && showCardViewButtons}
             onSelect={onSelectWorld}
             haptics={haptics}
           />
@@ -40,5 +57,3 @@ export function FeaturedWorldRail({ worlds, activeWorld, progress, quality, onSe
     </group>
   );
 }
-
-export { featuredWorlds };

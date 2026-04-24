@@ -1,96 +1,83 @@
-# WRLD ONE — Phase 5.3 Spatial Interface
+# WRLD ONE — Phase 5.4/5.5 Spatial Surgery
 
-## Phase 5.3 summary
-This phase rebuilds WRLD ONE into a bright cinematic spatial gallery system: fixed fullscreen WebGL canvas, scroll-driven camera journey, featured-world rail, responsive HUD, and sensory controls.
+## Phase 5.4/5.5 summary
+This pass converts the prototype into a single-focus spatial gallery composition: native document scroll-space, a compressed camera/gallery scale, one primary card/media rail, and phase-gated visibility so only the right UI layer is readable at each moment.
 
-## PRMO-caliber interaction translation
-PRMO is used as interaction-quality reference only. WRLD ONE implementation is original in data model, copy, layout, visual language, and 3D composition.
+## Why scroll-space changed
+The app now uses real page scroll (`scrollY` against document height) with a fixed canvas/HUD shell and a dedicated `scroll-space` element (`700vh` desktop / `760vh` mobile). This removes fake scroll behavior and improves iPhone-native interaction.
 
-## Art direction
-**WRLD ONE is a luminous spatial gallery where featured worlds float through soft atmospheric light like living cinematic artifacts.**
+## Camera and gallery scale explanation
+The camera now follows authored keyframes with damped interpolation and restrained FOV/parallax. World card positions are compressed to approximately `z -2` through `z -13` so the scene reads as a curated gallery, not a deep tunnel.
 
-## Exact color system
-- Background: `#fff8ec`, `#f6e9ff`, `#dff7ff`, `#eafbea`
-- Ink: `#17131f`, `#09070d`
-- Accents: `#ffd166`, `#ff7a66`, `#54d8ff`, `#a78bfa`, `#7cffb2`, `#fffdf7`, `#ffb4c8`
+## Duplicate visual system cleanup
+`FeaturedWorldRail` is the single visible card/media system. Legacy competing systems (separate visible media panels/hotspots) are not part of live scene rendering in this phase.
 
-## Scroll map
-- `0.00–0.10`: entry
-- `0.10–0.20`: worlds intro
-- `0.20–0.72`: world rail
-- `0.72–0.84`: core focus
-- `0.84–0.94`: rift transition
-- `0.94–1.00`: final bloom
+## Scene phase system
+`getScenePhase(progress)` centralizes visibility:
+- `hero`
+- `intro`
+- `rail`
+- `focus`
+- `bloom`
 
-## Camera path
-Camera uses authored control points from near-front entry to deep bloom portal, with damped interpolation and limited pointer/sensor parallax.
+These phases control hero/index/readout/scrollbar/card-label/view-button visibility and prevent overlap collisions.
+
+## Text budget rule
+A central visibility pass enforces readable-layer limits:
+- Hero: brand + menu + hero copy
+- Mobile rail/focus: brand + menu + readout + one View
+- Drawer open mobile: brand + drawer only
+- Detail open: detail panel takes priority, competing overlays are hidden
+
+## Active-only card labels
+Card labels and View affordances render only on the active card and only when phase + active-strength thresholds allow it. Near/far cards stay quiet silhouettes.
+
+## Mobile drawer visibility rule
+Drawer is closed by default and is the only location for the full Featured Worlds list on mobile. Opening drawer suppresses competing readout/card-label layers.
+
+## Hero/card collision fix
+Hero phase suppresses card labels, View buttons, index, and readout while adding a soft hero veil for legibility.
 
 ## FeaturedWorld data model
-Typed model includes IDs, status/category enums, media config, color tokens, and per-world scene composition metadata.
+World data is strongly typed and grouped by concern:
+- `world.media`
+- `world.colors`
+- `world.scene` (position/rotation/scroll target/focus range)
 
 ## PremiumGlassCard anatomy
-- Backing glass plate
-- Soft media plane (video/poster/procedural fallback)
-- Thin border/hairline behavior
-- Top-left index/title label
-- Lower-right View affordance
-- Expanded invisible hit area
+Each card is rebuilt as thin layers:
+- soft backing plane
+- media plane
+- subtle border strips
+- optional active sweep
+- active-only HTML label + View affordance
+- enlarged invisible hit area
 
-## Media lifecycle and fallback
-`useMediaTexture` centralizes media logic:
-- optional video (webm/mp4) when quality allows
+## Media texture lifecycle
+`useMediaTexture` handles:
+- video (when quality/state allows)
 - poster fallback
-- procedural fallback when no media slot is available
-- cleanup for texture/video resources
-
-## Sensor / sound / haptic behavior
-- Sound: user-triggered ambient oscillator bed only.
-- Haptic: optional navigator.vibrate pulse no-op fallback.
-- Sensor: optional DeviceOrientation permission flow with safe disable path.
-
-## Quality modes
-- **Low**: DPR 1, poster-only, minimal particles/orbs/ribbons.
-- **Medium**: DPR 1.5, one active video texture.
-- **High**: DPR 2, up to two active/near-active videos.
+- procedural fallback
+- pause/dispose cleanup for inactive/unmounted media
 
 ## Mobile QA checklist
-- Open on iPhone.
-- No horizontal overflow.
-- Scroll reaches all worlds.
-- Bottom nav/ticks visible.
-- Menu opens drawer.
-- Drawer closes on outside tap.
-- Sound starts only after tap.
-- Audio visualizer appears only when sound is on.
-- Haptic does not error if unsupported.
-- 3D Sensor permission flow does not break.
-- Snail card is readable and not stretched.
-- No giant OPEN pill.
-- No cyan side bars.
-- Detail panel opens and closes.
-- Vercel build succeeds.
+- [ ] No horizontal overflow.
+- [ ] Hero first-load shows no index/readout/card labels/View buttons.
+- [ ] Bottom readout appears after hero.
+- [ ] Mobile drawer opens only on tap and closes via backdrop.
+- [ ] Featured Worlds list appears only inside drawer on mobile.
+- [ ] Active card is the only card with readable View affordance.
+- [ ] Sound visualizer appears only when sound is enabled.
 
 ## Vercel deployment checklist
-- `npm run build` passes.
-- No TS strict errors.
-- Static assets in `/public/media` resolve.
-- Environment settings unchanged from current Vercel project.
+- [ ] `npm run build` passes.
+- [ ] No TypeScript errors.
+- [ ] App remains Vite + React + TypeScript + R3F.
+- [ ] Existing Vercel setup unchanged.
 
-## Performance checklist
-- Fixed full-canvas render shell.
-- Quality-aware particle/orb/ribbon counts.
-- Limited concurrent video textures.
-- Event listener cleanup on unmount.
-- Reduced-motion support for animation minimization.
-
-## Known future upgrades
-1. Add professionally filmed video loops.
-2. Replace procedural placeholders with real posters/video.
-3. Add GLB architectural objects per world.
-4. Compress GLB models with Draco.
-5. Compress textures with KTX2/Basis.
-6. Add image-sequence transitions for scroll moments.
-7. Refine camera motion with GSAP timelines.
-8. Build full case-study detail views.
-9. Create a dedicated WRLD ONE logo and typography system.
-10. Add project-specific sound design.
+## Next recommended upgrades
+1. Professionally filmed loops.
+2. Real GLB objects per world.
+3. Scroll image-sequence transitions.
+4. GSAP timeline polish.
+5. Full case-study detail pages.

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { FeaturedWorld, WorldId } from '../types/world';
 import { FeaturedWorksIndex } from './FeaturedWorksIndex';
 import { ScrollbarNav } from './ScrollbarNav';
@@ -9,7 +9,8 @@ import { MobileDrawer } from './MobileDrawer';
 import type { AmbientSoundState } from '../systems/useAmbientSound';
 import type { HapticsState } from '../systems/useHaptics';
 import type { DeviceSensorState } from '../systems/useDeviceSensor';
-import { scrollToProgress } from '../constants/scrollMap';
+import type { ScenePhaseState } from '../systems/useScenePhase';
+import { scrollToProgress } from '../systems/useScrollProgress';
 
 interface HUDProps {
   progress: number;
@@ -17,47 +18,65 @@ interface HUDProps {
   selectedWorld: FeaturedWorld | null;
   featuredWorlds: FeaturedWorld[];
   onSelectWorld: (worldId: WorldId) => void;
-  onCloseWorld: () => void;
-  onNavigateToWorld: (worldId: WorldId) => void;
+  onSetDrawerOpen: (open: boolean) => void;
+  drawerOpen: boolean;
   sound: AmbientSoundState;
   haptics: HapticsState;
   sensor: DeviceSensorState;
+  phaseState: ScenePhaseState;
+  isMobile: boolean;
 }
 
-export function HUD({ progress, activeWorld, featuredWorlds, onNavigateToWorld, sound, haptics, sensor }: HUDProps) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+export function HUD({ progress, activeWorld, selectedWorld, featuredWorlds, onSelectWorld, onSetDrawerOpen, drawerOpen, sound, haptics, sensor, phaseState, isMobile }: HUDProps) {
   const nav = useMemo(
     () => [
       { label: 'Top', target: 0 },
-      { label: 'Worlds', target: 0.2 },
+      { label: 'Worlds', target: 0.28 },
       { label: 'Signal', target: 0.4 },
       { label: 'Contact', target: 0.94 },
     ],
     [],
   );
 
+  const detailOpen = Boolean(selectedWorld);
+  const showDesktopIndex = !isMobile && phaseState.showFeaturedIndex && !detailOpen;
+  const showReadout = phaseState.showActiveReadout && !(isMobile && (drawerOpen || detailOpen));
+  const showScrollbar = phaseState.showScrollbarNav && !(isMobile && (drawerOpen || detailOpen));
+
+  // Text-budget rule: centrally gate layers so hero / drawer / detail never compete with every HUD system.
   return (
     <>
-      <div className="global-brand">WRLD ONE</div>
-      <div className="top-nav">
-        {nav.map((item) => (
-          <button key={item.label} className={`top-nav__item ${Math.abs(progress - item.target) < 0.1 ? 'is-active' : ''}`} onClick={() => scrollToProgress(item.target)} aria-label={`Go to ${item.label}`}>
-            {item.label}
-          </button>
-        ))}
+      <div className="global-brand">
+        <div>WRLD ONE</div>
+        {!isMobile && <div>SPATIAL WORKS</div>}
       </div>
-      <div className="hud-desktop sensory-controls-wrap"><SensoryControls sound={sound} haptics={haptics} sensor={sensor} activeAccent={activeWorld.colors.accent} /></div>
-      <FeaturedWorksIndex worlds={featuredWorlds} activeWorldId={activeWorld.id} onNavigate={onNavigateToWorld} />
-      <ScrollbarNav worlds={featuredWorlds} activeWorldId={activeWorld.id} progress={progress} onNavigate={onNavigateToWorld} />
-      <ActiveWorldReadout world={activeWorld} progress={progress} />
-      <AudioVisualizer enabled={sound.enabled} accent={activeWorld.colors.accent} />
-      <button className="top-nav__item hud-mobile-menu" onClick={() => setDrawerOpen((v) => !v)} aria-label="Open mobile menu">Menu</button>
+
+      {!isMobile && (
+        <div className="top-nav">
+          {nav.map((item) => (
+            <button key={item.label} className={`top-nav__item ${Math.abs(progress - item.target) < 0.08 ? 'is-active' : ''}`} onClick={() => scrollToProgress(item.target)} aria-label={`Go to ${item.label}`}>
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <button className="sensory-button hud-mobile-menu" onClick={() => onSetDrawerOpen(!drawerOpen)} aria-label="Toggle mobile menu">{drawerOpen ? 'Close' : 'Menu'}</button>
+
+      {!isMobile && !phaseState.showHero && <div className="sensory-controls-wrap"><SensoryControls sound={sound} haptics={haptics} sensor={sensor} activeAccent={activeWorld.colors.accent} /></div>}
+
+      {showDesktopIndex && <FeaturedWorksIndex worlds={featuredWorlds} activeWorldId={activeWorld.id} onNavigate={onSelectWorld} />}
+      {showScrollbar && <ScrollbarNav worlds={featuredWorlds} activeWorldId={activeWorld.id} progress={progress} onNavigate={onSelectWorld} orientation={isMobile ? 'horizontal' : 'vertical'} />}
+      {showReadout && <ActiveWorldReadout world={activeWorld} progress={progress} isMobile={isMobile} />}
+
+      <AudioVisualizer enabled={sound.enabled && !phaseState.showHero && !drawerOpen && !detailOpen} accent={activeWorld.colors.accent} />
+
       <MobileDrawer
-        open={drawerOpen}
+        open={drawerOpen && !phaseState.showHero}
         worlds={featuredWorlds}
         activeWorldId={activeWorld.id}
-        onClose={() => setDrawerOpen(false)}
-        onNavigate={(id) => { onNavigateToWorld(id); setDrawerOpen(false); }}
+        onClose={() => onSetDrawerOpen(false)}
+        onNavigate={onSelectWorld}
         sound={sound}
         haptics={haptics}
         sensor={sensor}
