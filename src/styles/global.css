@@ -168,6 +168,18 @@ body,
   pointer-events: none;
 }
 
+.media-activate {
+  border: 1px solid #9fe8ff;
+  border-radius: 999px;
+  background: rgba(4, 11, 28, 0.9);
+  color: #ddf5ff;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+}
+
 .loading-screen,
 .fallback-screen {
   position: fixed;

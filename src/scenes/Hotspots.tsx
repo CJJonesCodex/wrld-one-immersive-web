@@ -33,11 +33,11 @@ const hotspots: HotspotData[] = [
   {
     id: 'ZONE-03',
     title: 'Core Chamber',
-    description: 'An orbiting nexus of energy arcs wrapped around the world core.',
-    lore: 'Core pulses synchronize every cycle to keep the realm stable.',
+    description: 'A vertical living-world media portal hovers beside the world core for playback validation.',
+    lore: 'Living Macro Sample now occupies the core-loop media slot as a proving ground for future AI-generated living-world footage.',
     mediaSlot: 'core-loop',
-    futureAssetHint: 'Upload /public/media/core-loop.webm + core-loop.mp4 and core-poster.webp.',
-    position: [-3.6, 3, -105],
+    futureAssetHint: 'core-loop media slot now streams Living Macro Sample and is reserved for future AI-generated living-world footage.',
+    position: [-2.45, 2.95, -103.1],
   },
   {
     id: 'ZONE-04',
