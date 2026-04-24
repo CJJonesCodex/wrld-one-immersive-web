@@ -6,6 +6,8 @@ import { Hotspots } from './Hotspots';
 import { MediaPlanes } from './MediaPlanes';
 import { FeaturedWorldRail } from './FeaturedWorldRail';
 import { DepthMist } from './DepthMist';
+import { GradientAtmosphere } from './GradientAtmosphere';
+import { WorldOrbs } from './WorldOrbs';
 import type { QualityConfig } from '../systems/useQuality';
 
 interface WorldProps {
@@ -27,13 +29,16 @@ export function World({ progress, activeIndex, quality, sensorOffset, soundOn, o
       gl={{ antialias: quality.antialias, powerPreference: 'high-performance' }}
       onCreated={onReady}
     >
-      <color attach="background" args={['#030305']} />
-      <fog attach="fog" args={['#050509', 12, 260]} />
-      <ambientLight intensity={0.22} />
-      <directionalLight position={[4, 7, -20]} color="#ccd7e4" intensity={0.7 * quality.glowIntensity} />
-      <pointLight position={[0, 3, -110]} color="#6d89a2" intensity={0.5 * quality.glowIntensity} distance={52} />
+      <color attach="background" args={['#f6f7ff']} />
+      <fog attach="fog" args={['#f8f1ff', 24, 280]} />
+      <ambientLight intensity={0.62} />
+      <directionalLight position={[5, 8, -14]} color="#ffe7bf" intensity={1.05 * quality.glowIntensity} />
+      <pointLight position={[-4, 4, -112]} color="#b0e3ff" intensity={0.9 * quality.glowIntensity} distance={160} />
+      <pointLight position={[2, 3, -175]} color="#ffc6de" intensity={0.55 * quality.glowIntensity} distance={120} />
 
       <Suspense fallback={null}>
+        <GradientAtmosphere />
+        <WorldOrbs />
         <DepthMist />
         <Particles count={quality.particleCount} />
         <FeaturedWorldRail

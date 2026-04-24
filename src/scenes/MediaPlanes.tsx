@@ -1,6 +1,3 @@
-import { useMemo } from 'react';
-import { featuredWorlds } from '../data/featuredWorlds';
-import { PremiumGlassCard } from './PremiumGlassCard';
 import type { QualityConfig } from '../systems/useQuality';
 
 interface MediaPlanesProps {
@@ -9,16 +6,19 @@ interface MediaPlanesProps {
   onSelectCore: () => void;
 }
 
-export function MediaPlanes({ quality, activeIndex, onSelectCore }: MediaPlanesProps) {
-  const coreWorld = useMemo(() => featuredWorlds[2], []);
-  const ghostWorld = useMemo(() => featuredWorlds[3], []);
-
+export function MediaPlanes({ quality, activeIndex }: MediaPlanesProps) {
   return (
     <group>
-      <PremiumGlassCard world={coreWorld} isActive={activeIndex === 2} media={null} onSelect={onSelectCore} />
-      {quality.level !== 'low' ? (
-        <PremiumGlassCard world={ghostWorld} isActive={false} media={null} onSelect={onSelectCore} zOffset={8} />
-      ) : null}
+      <mesh position={[-1.4, 2.3, -98]} rotation={[0, 0.24, 0]}>
+        <torusGeometry args={[1.5, 0.06, 18, 96]} />
+        <meshStandardMaterial
+          color="#ffd5a0"
+          emissive={activeIndex === 2 ? '#ffeac6' : '#ffc996'}
+          emissiveIntensity={quality.level === 'high' ? 0.24 : 0.14}
+          transparent
+          opacity={0.55}
+        />
+      </mesh>
     </group>
   );
 }

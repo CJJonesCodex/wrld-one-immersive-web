@@ -11,22 +11,22 @@ export function AudioVisualizer({ analyser, visible }: AudioVisualizerProps) {
   useEffect(() => {
     if (!analyser || !visible) return;
 
-    const ctx = canvasRef.current?.getContext('2d');
-    if (!ctx || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!ctx || !canvas) return;
     const data = new Uint8Array(analyser.frequencyBinCount);
     let raf = 0;
 
     const draw = () => {
       analyser.getByteFrequencyData(data);
-      const { width, height } = canvasRef.current as HTMLCanvasElement;
-      ctx.clearRect(0, 0, width, height);
-      const bars = 18;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const bars = 20;
       for (let i = 0; i < bars; i += 1) {
         const value = data[i] / 255;
-        const barHeight = Math.max(2, value * height);
-        const x = i * (width / bars);
-        ctx.fillStyle = i % 3 === 0 ? 'rgba(180, 199, 214, 0.9)' : 'rgba(126, 151, 170, 0.65)';
-        ctx.fillRect(x, height - barHeight, 2, barHeight);
+        const barHeight = Math.max(2, value * canvas.height);
+        const x = i * (canvas.width / bars);
+        ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 220, 174, 0.9)' : 'rgba(149, 212, 255, 0.72)';
+        ctx.fillRect(x, canvas.height - barHeight, 2, barHeight);
       }
       raf = requestAnimationFrame(draw);
     };

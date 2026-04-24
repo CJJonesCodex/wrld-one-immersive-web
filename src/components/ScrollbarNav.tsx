@@ -19,6 +19,7 @@ export function ScrollbarNav({ count, activeIndex, progress, onSelect }: Scrollb
             aria-label={`Navigate to world ${index + 1}`}
             className={activeIndex === index ? 'active' : ''}
             onClick={() => onSelect(index)}
+            data-cursor="interactive"
           />
         ))}
       </div>

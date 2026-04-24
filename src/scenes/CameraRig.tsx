@@ -14,12 +14,13 @@ export function CameraRig({ progress, sensorOffset }: CameraRigProps) {
   const cameraCurve = useMemo(
     () =>
       new CatmullRomCurve3([
-        new Vector3(0, 1.7, 10),
-        new Vector3(0, 1.9, -18),
-        new Vector3(1.2, 2.2, -58),
-        new Vector3(-1.5, 2.35, -101),
-        new Vector3(0.3, 2.2, -148),
-        new Vector3(-0.2, 1.8, -188),
+        new Vector3(0, 1.75, 11),
+        new Vector3(0.5, 2.0, -22),
+        new Vector3(1.2, 2.3, -58),
+        new Vector3(-1.4, 2.35, -99),
+        new Vector3(1.1, 2.2, -138),
+        new Vector3(-1.0, 2.35, -172),
+        new Vector3(0.2, 2.0, -207),
       ]),
     [],
   );
@@ -27,36 +28,34 @@ export function CameraRig({ progress, sensorOffset }: CameraRigProps) {
   const lookCurve = useMemo(
     () =>
       new CatmullRomCurve3([
-        new Vector3(0, 1.8, -16),
-        new Vector3(0.2, 2, -42),
-        new Vector3(-0.6, 2.2, -82),
-        new Vector3(0.8, 2.4, -120),
-        new Vector3(0.2, 2.1, -180),
+        new Vector3(0, 1.9, -10),
+        new Vector3(0.1, 2.1, -40),
+        new Vector3(-0.4, 2.2, -80),
+        new Vector3(0.6, 2.35, -120),
+        new Vector3(-0.2, 2.25, -164),
+        new Vector3(0, 2.15, -212),
       ]),
     [],
   );
 
   useFrame((_, delta) => {
-    const mixedX = pointer.x * 0.7 + sensorOffset.x * 0.3;
-    const mixedY = pointer.y * 0.7 + sensorOffset.y * 0.3;
-    blendedPointer.current.lerp(new Vector2(mixedX, mixedY), 1 - Math.exp(-delta * 2.4));
+    const mixedX = pointer.x * 0.76 + sensorOffset.x * 0.24;
+    const mixedY = pointer.y * 0.76 + sensorOffset.y * 0.24;
+    blendedPointer.current.lerp(new Vector2(mixedX, mixedY), 1 - Math.exp(-delta * 2.6));
 
     const path = MathUtils.clamp(progress, 0, 1);
     const curvePos = cameraCurve.getPoint(path);
     const lookPos = lookCurve.getPoint(path);
+    const drift = Math.sin(path * Math.PI * 6) * 0.08;
 
     const target = new Vector3(
-      curvePos.x + blendedPointer.current.x * 0.28 + Math.sin(path * Math.PI * 2) * 0.12,
-      curvePos.y + blendedPointer.current.y * 0.2,
+      curvePos.x + blendedPointer.current.x * 0.24 + drift,
+      curvePos.y + blendedPointer.current.y * 0.18,
       curvePos.z,
     );
 
-    camera.position.lerp(target, 1 - Math.exp(-delta * 2.6));
-    camera.lookAt(
-      lookPos.x + blendedPointer.current.x * 0.13,
-      lookPos.y + blendedPointer.current.y * 0.08,
-      lookPos.z,
-    );
+    camera.position.lerp(target, 1 - Math.exp(-delta * 2.4));
+    camera.lookAt(lookPos.x + blendedPointer.current.x * 0.11, lookPos.y + blendedPointer.current.y * 0.08, lookPos.z);
   });
 
   return null;
