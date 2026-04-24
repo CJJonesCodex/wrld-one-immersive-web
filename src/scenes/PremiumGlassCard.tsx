@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import type { FeaturedWorld, QualityLevel, WorldId } from '../types/world';
+import type { VisualMode } from '../config/visualMode';
 import type { HapticsState } from '../systems/useHaptics';
 import { useMediaTexture } from './useMediaTexture';
 
@@ -18,6 +19,8 @@ interface PremiumGlassCardProps {
   quality: QualityLevel;
   onSelect: (worldId: WorldId) => void;
   haptics?: HapticsState;
+  visualMode: VisualMode;
+  phase: 'hero' | 'intro' | 'rail' | 'focus' | 'bloom';
 }
 
 function getCardSize(aspectRatio: number): { width: number; height: number } {
@@ -29,7 +32,7 @@ function getCardSize(aspectRatio: number): { width: number; height: number } {
   return { width: 2.6, height: 1.6 };
 }
 
-export function PremiumGlassCard({ world, activeStrength, isActive, isNearActive, showLabels, showViewButton, allowVideo, quality, onSelect, haptics }: PremiumGlassCardProps) {
+export function PremiumGlassCard({ world, activeStrength, isActive, isNearActive, showLabels, showViewButton, allowVideo, quality, onSelect, haptics, visualMode, phase }: PremiumGlassCardProps) {
   const groupRef = useRef<THREE.Group>(null);
   const { texture } = useMediaTexture({ media: world.media, allowVideo, isActive, isNearActive, quality });
   const { width, height } = useMemo(() => getCardSize(world.media.aspectRatio), [world.media.aspectRatio]);
@@ -44,9 +47,10 @@ export function PremiumGlassCard({ world, activeStrength, isActive, isNearActive
     groupRef.current.rotation.z = THREE.MathUtils.damp(groupRef.current.rotation.z, Math.sin(state.clock.elapsedTime * 0.2 + world.index) * 0.006, 4, delta);
   });
 
-  const mediaOpacity = isActive ? 1 : isNearActive ? 0.34 : 0.1;
-  const backingOpacity = isActive ? 0.28 : isNearActive ? 0.1 : 0.04;
-  const borderOpacity = isActive ? 0.52 : isNearActive ? 0.12 : 0.05;
+  const silhouetteMediaOpacity = phase === 'hero' ? 0.08 : 0.16;
+  const mediaOpacity = visualMode === 'title-vfx' ? silhouetteMediaOpacity : isActive ? 1 : isNearActive ? 0.34 : 0.1;
+  const backingOpacity = visualMode === 'title-vfx' ? 0.05 : isActive ? 0.28 : isNearActive ? 0.1 : 0.04;
+  const borderOpacity = visualMode === 'title-vfx' ? 0.06 : isActive ? 0.52 : isNearActive ? 0.12 : 0.05;
   const canShowLabel = showLabels && isActive && activeStrength >= 0.62;
   const canShowView = showViewButton && isActive && activeStrength >= 0.72;
 
@@ -72,7 +76,7 @@ export function PremiumGlassCard({ world, activeStrength, isActive, isNearActive
       <mesh position={[-width / 2 - 0.01, 0, 0.015]}><planeGeometry args={[0.014, height]} /><meshBasicMaterial transparent opacity={borderOpacity} color={world.colors.secondary} /></mesh>
       <mesh position={[width / 2 + 0.01, 0, 0.015]}><planeGeometry args={[0.014, height]} /><meshBasicMaterial transparent opacity={borderOpacity} color={world.colors.secondary} /></mesh>
 
-      {isActive && (
+      {isActive && visualMode === 'media-cards' && (
         <mesh position={[-width * 0.22, height * 0.36, 0.024]} rotation={[0, 0, -0.24]}>
           <planeGeometry args={[0.12, height * 0.78]} />
           <meshBasicMaterial color={world.colors.secondary} transparent opacity={0.18} depthWrite={false} />

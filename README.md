@@ -1,83 +1,57 @@
-# WRLD ONE — Phase 5.4/5.5 Spatial Surgery
+# WRLD ONE — Phase 5.6 Text Monument VFX Worlds
 
-## Phase 5.4/5.5 summary
-This pass converts the prototype into a single-focus spatial gallery composition: native document scroll-space, a compressed camera/gallery scale, one primary card/media rail, and phase-gated visibility so only the right UI layer is readable at each moment.
+## Phase 5.6 summary
+Phase 5.6 introduces a switchable visual architecture where the default presentation is now **text-first**: one huge active world title monument plus one procedural VFX identity per world. Media cards are retained as a fallback mode and are not deleted.
 
-## Why scroll-space changed
-The app now uses real page scroll (`scrollY` against document height) with a fixed canvas/HUD shell and a dedicated `scroll-space` element (`700vh` desktop / `760vh` mobile). This removes fake scroll behavior and improves iPhone-native interaction.
+## Visual modes
+- `title-vfx` (default): giant active title + procedural VFX hero.
+- `media-cards`: restores picture/media-card-first presentation.
 
-## Camera and gallery scale explanation
-The camera now follows authored keyframes with damped interpolation and restrained FOV/parallax. World card positions are compressed to approximately `z -2` through `z -13` so the scene reads as a curated gallery, not a deep tunnel.
+Switch mode in:
+- `src/config/visualMode.ts`
 
-## Duplicate visual system cleanup
-`FeaturedWorldRail` is the single visible card/media system. Legacy competing systems (separate visible media panels/hotspots) are not part of live scene rendering in this phase.
+```ts
+export const DEFAULT_VISUAL_MODE: VisualMode = 'title-vfx';
+```
 
-## Scene phase system
-`getScenePhase(progress)` centralizes visibility:
-- `hero`
-- `intro`
-- `rail`
-- `focus`
-- `bloom`
+## World VFX presets
+1. Living Macro → organic dew shimmer.
+2. Signal Garden → signal lines + node pulses.
+3. Core Chamber → concentric halo system.
+4. Aurora Passage → ribbon refraction field.
+5. Rift Bloom → petal aperture bloom.
+6. Future World → constellation blueprint field.
 
-These phases control hero/index/readout/scrollbar/card-label/view-button visibility and prevent overlap collisions.
+## No-clutter scene behavior
+- Hero phase keeps only site hero messaging.
+- Title monument starts after hero threshold.
+- One active title only.
+- One View CTA only.
+- Drawer/detail states dim or hide title stage.
+- In title-vfx mode, media cards remain subdued silhouettes.
 
-## Text budget rule
-A central visibility pass enforces readable-layer limits:
-- Hero: brand + menu + hero copy
-- Mobile rail/focus: brand + menu + readout + one View
-- Drawer open mobile: brand + drawer only
-- Detail open: detail panel takes priority, competing overlays are hidden
-
-## Active-only card labels
-Card labels and View affordances render only on the active card and only when phase + active-strength thresholds allow it. Near/far cards stay quiet silhouettes.
-
-## Mobile drawer visibility rule
-Drawer is closed by default and is the only location for the full Featured Worlds list on mobile. Opening drawer suppresses competing readout/card-label layers.
-
-## Hero/card collision fix
-Hero phase suppresses card labels, View buttons, index, and readout while adding a soft hero veil for legibility.
-
-## FeaturedWorld data model
-World data is strongly typed and grouped by concern:
-- `world.media`
-- `world.colors`
-- `world.scene` (position/rotation/scroll target/focus range)
-
-## PremiumGlassCard anatomy
-Each card is rebuilt as thin layers:
-- soft backing plane
-- media plane
-- subtle border strips
-- optional active sweep
-- active-only HTML label + View affordance
-- enlarged invisible hit area
-
-## Media texture lifecycle
-`useMediaTexture` handles:
-- video (when quality/state allows)
-- poster fallback
-- procedural fallback
-- pause/dispose cleanup for inactive/unmounted media
+## Performance notes
+- One active VFX component only.
+- Quality levels control particle/line/ring/ribbon counts.
+- No hidden videos in `title-vfx` mode.
+- No post-processing dependency added.
 
 ## Mobile QA checklist
-- [ ] No horizontal overflow.
-- [ ] Hero first-load shows no index/readout/card labels/View buttons.
-- [ ] Bottom readout appears after hero.
-- [ ] Mobile drawer opens only on tap and closes via backdrop.
-- [ ] Featured Worlds list appears only inside drawer on mobile.
-- [ ] Active card is the only card with readable View affordance.
-- [ ] Sound visualizer appears only when sound is enabled.
+- [ ] Menu remains readable and unobstructed.
+- [ ] Title does not overflow horizontally.
+- [ ] Exactly one active title and one View CTA.
+- [ ] Drawer open suppresses title readability.
+- [ ] Detail panel takes visual priority.
+- [ ] Build passes with no TypeScript errors.
 
 ## Vercel deployment checklist
 - [ ] `npm run build` passes.
-- [ ] No TypeScript errors.
 - [ ] App remains Vite + React + TypeScript + R3F.
 - [ ] Existing Vercel setup unchanged.
 
-## Next recommended upgrades
-1. Professionally filmed loops.
-2. Real GLB objects per world.
-3. Scroll image-sequence transitions.
-4. GSAP timeline polish.
-5. Full case-study detail pages.
+## Future upgrades
+1. Add professionally filmed loops back into `media-cards` mode.
+2. Add custom GLB objects per text VFX world.
+3. Refine title transitions with GSAP if desired.
+4. Add sound-reactive VFX intensity.
+5. Add case-study detail panels for each world.

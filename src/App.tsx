@@ -11,6 +11,7 @@ import { useHaptics } from './systems/useHaptics';
 import { useDeviceSensor } from './systems/useDeviceSensor';
 import { HeroOverlay } from './components/HeroOverlay';
 import { HUD } from './components/HUD';
+import { WorldTitleOverlay } from './components/WorldTitleOverlay';
 import { WorldDetailPanel } from './components/WorldDetailPanel';
 import { RecoloredCursor } from './components/RecoloredCursor';
 import type { WorldId } from './types/world';
@@ -34,8 +35,6 @@ function App() {
   const phaseState = getScenePhase(progress, isMobile);
 
   const sceneVeilOpacity = selectedWorld ? 0.28 : drawerOpen ? 0.22 : phaseState.showHero ? 0.18 : 0;
-  const showCardLabels = phaseState.showCardLabels && !selectedWorld && !(isMobile && drawerOpen);
-  const showCardViewButtons = phaseState.showCardViewButtons && !selectedWorld && !(isMobile && drawerOpen);
 
   return (
     <main className="site-shell">
@@ -53,9 +52,7 @@ function App() {
             haptics={haptics}
             worlds={featuredWorlds}
             reducedMotion={reducedMotion}
-            showCardLabels={showCardLabels}
-            showCardViewButtons={showCardViewButtons}
-            phase={phaseState.phase}
+            phaseState={phaseState}
             mobileDrawerOpen={drawerOpen}
             detailOpen={Boolean(selectedWorld)}
             isMobile={isMobile}
@@ -66,6 +63,17 @@ function App() {
       <div className="hud-layer">
         <div className="scene-veil" style={{ opacity: sceneVeilOpacity }} />
         <HeroOverlay progress={progress} showHero={phaseState.showHero} />
+        <WorldTitleOverlay
+          activeWorld={activeWorld}
+          progress={progress}
+          phaseState={phaseState}
+          selectedWorldId={selectedWorldId}
+          drawerOpen={drawerOpen}
+          onOpenWorld={(worldId) => {
+            haptics.pulse(12);
+            setSelectedWorldId(worldId);
+          }}
+        />
         <HUD
           progress={progress}
           activeWorld={activeWorld}
