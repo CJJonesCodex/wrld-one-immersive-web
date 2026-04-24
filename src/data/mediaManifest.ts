@@ -8,6 +8,7 @@ export interface MediaSlot {
   mp4: string;
   webm: string;
   poster: string;
+  aspectRatio: number;
 }
 
 export const mediaManifest: MediaSlot[] = [
@@ -19,6 +20,7 @@ export const mediaManifest: MediaSlot[] = [
     mp4: '/media/gate-loop.mp4',
     webm: '/media/gate-loop.webm',
     poster: '/media/gate-poster.webp',
+    aspectRatio: 16 / 9,
   },
   {
     id: 'corridor-loop',
@@ -28,15 +30,17 @@ export const mediaManifest: MediaSlot[] = [
     mp4: '/media/corridor-loop.mp4',
     webm: '/media/corridor-loop.webm',
     poster: '/media/corridor-poster.webp',
+    aspectRatio: 16 / 9,
   },
   {
     id: 'core-loop',
     zoneId: 'ZONE-03',
-    title: 'Core Chamber Pulse',
-    description: 'Energy lattice diagnostics around the chamber nucleus.',
+    title: 'Living Macro Sample',
+    description: 'A cinematic nature sample used to test video texture playback inside the Core Chamber.',
     mp4: '/media/core-loop.mp4',
     webm: '/media/core-loop.webm',
     poster: '/media/core-poster.webp',
+    aspectRatio: 9 / 16,
   },
   {
     id: 'rift-loop',
@@ -46,6 +50,7 @@ export const mediaManifest: MediaSlot[] = [
     mp4: '/media/rift-loop.mp4',
     webm: '/media/rift-loop.webm',
     poster: '/media/rift-poster.webp',
+    aspectRatio: 16 / 9,
   },
 ];
 
