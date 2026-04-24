@@ -11,6 +11,7 @@ import type { HapticsState } from '../systems/useHaptics';
 import type { DeviceSensorState } from '../systems/useDeviceSensor';
 import type { ScenePhaseState } from '../systems/useScenePhase';
 import { scrollToProgress } from '../systems/useScrollProgress';
+import { DEFAULT_VISUAL_MODE } from '../config/visualMode';
 
 interface HUDProps {
   progress: number;
@@ -39,8 +40,9 @@ export function HUD({ progress, activeWorld, selectedWorld, featuredWorlds, onSe
   );
 
   const detailOpen = Boolean(selectedWorld);
-  const showDesktopIndex = !isMobile && phaseState.showFeaturedIndex && !detailOpen;
-  const showReadout = phaseState.showActiveReadout && !(isMobile && (drawerOpen || detailOpen));
+  const titleVfxMode = DEFAULT_VISUAL_MODE === 'title-vfx';
+  const showDesktopIndex = !titleVfxMode && !isMobile && phaseState.showFeaturedIndex && !detailOpen;
+  const showReadout = !titleVfxMode && phaseState.showActiveReadout && !(isMobile && (drawerOpen || detailOpen));
   const showScrollbar = phaseState.showScrollbarNav && !(isMobile && (drawerOpen || detailOpen));
 
   // Text-budget rule: centrally gate layers so hero / drawer / detail never compete with every HUD system.

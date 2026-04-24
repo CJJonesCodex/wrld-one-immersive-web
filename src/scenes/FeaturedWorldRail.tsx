@@ -2,6 +2,7 @@ import type { FeaturedWorld, QualityLevel, WorldId } from '../types/world';
 import { getActiveStrength } from '../utils/math';
 import { PremiumGlassCard } from './PremiumGlassCard';
 import type { HapticsState } from '../systems/useHaptics';
+import type { VisualMode } from '../config/visualMode';
 
 interface FeaturedWorldRailProps {
   worlds: FeaturedWorld[];
@@ -16,9 +17,10 @@ interface FeaturedWorldRailProps {
   mobileDrawerOpen: boolean;
   detailOpen: boolean;
   isMobile: boolean;
+  visualMode: VisualMode;
 }
 
-export function FeaturedWorldRail({ worlds, activeWorld, progress, quality, onSelectWorld, haptics, showCardLabels, showCardViewButtons, phase, mobileDrawerOpen, detailOpen, isMobile }: FeaturedWorldRailProps) {
+export function FeaturedWorldRail({ worlds, activeWorld, progress, quality, onSelectWorld, haptics, showCardLabels, showCardViewButtons, phase, mobileDrawerOpen, detailOpen, isMobile, visualMode }: FeaturedWorldRailProps) {
   const maxNearActive = quality === 'high' ? 2 : quality === 'medium' ? 1 : 0;
   const nearActive = worlds
     .filter((world) => world.id !== activeWorld.id)
@@ -46,11 +48,13 @@ export function FeaturedWorldRail({ worlds, activeWorld, progress, quality, onSe
             isActive={isActive}
             isNearActive={isNearActive || phase === 'hero'}
             quality={quality}
-            allowVideo={quality !== 'low' && (isActive || isNearActive)}
-            showLabels={!hideHtml && phase !== 'hero' && showCardLabels && (!isMobile || isActive)}
-            showViewButton={!hideHtml && phase !== 'hero' && showCardViewButtons}
+            allowVideo={visualMode === 'media-cards' && quality !== 'low' && (isActive || isNearActive)}
+            showLabels={!hideHtml && visualMode === 'media-cards' && phase !== 'hero' && showCardLabels && (!isMobile || isActive)}
+            showViewButton={!hideHtml && visualMode === 'media-cards' && phase !== 'hero' && showCardViewButtons}
             onSelect={onSelectWorld}
             haptics={haptics}
+            visualMode={visualMode}
+            phase={phase}
           />
         );
       })}

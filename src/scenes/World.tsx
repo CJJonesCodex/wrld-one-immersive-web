@@ -5,11 +5,13 @@ import { WorldOrbs } from './WorldOrbs';
 import { ThinRibbons } from './ThinRibbons';
 import { FeaturedWorldRail } from './FeaturedWorldRail';
 import { RiftBloom } from './RiftBloom';
+import { WorldVFXStage } from './WorldVFXStage';
 import type { FeaturedWorld, QualityLevel, WorldId } from '../types/world';
 import type { PointerIntent } from '../systems/usePointerIntent';
 import type { DeviceSensorState } from '../systems/useDeviceSensor';
 import type { HapticsState } from '../systems/useHaptics';
-import type { ScenePhase } from '../systems/useScenePhase';
+import type { ScenePhaseState } from '../systems/useScenePhase';
+import { DEFAULT_VISUAL_MODE } from '../config/visualMode';
 
 interface WorldProps {
   progress: number;
@@ -22,15 +24,16 @@ interface WorldProps {
   haptics: HapticsState;
   worlds: FeaturedWorld[];
   reducedMotion: boolean;
-  showCardLabels: boolean;
-  showCardViewButtons: boolean;
-  phase: ScenePhase;
+  phaseState: ScenePhaseState;
   mobileDrawerOpen: boolean;
   detailOpen: boolean;
   isMobile: boolean;
 }
 
-export function World({ progress, activeWorld, quality, pointer, sensor, onSelectWorld, haptics, worlds, reducedMotion, showCardLabels, showCardViewButtons, phase, mobileDrawerOpen, detailOpen, isMobile }: WorldProps) {
+export function World({ progress, activeWorld, quality, pointer, sensor, onSelectWorld, haptics, worlds, reducedMotion, phaseState, mobileDrawerOpen, detailOpen, isMobile }: WorldProps) {
+  const titleVfxMode = DEFAULT_VISUAL_MODE === 'title-vfx';
+  const hideSilhouetteHtml = detailOpen || (isMobile && mobileDrawerOpen) || titleVfxMode;
+
   return (
     <>
       <color attach="background" args={['#fff8ec']} />
@@ -42,6 +45,17 @@ export function World({ progress, activeWorld, quality, pointer, sensor, onSelec
       <DepthMist quality={quality} activeWorld={activeWorld} />
       <WorldOrbs activeWorld={activeWorld} quality={quality} />
       <ThinRibbons activeWorld={activeWorld} quality={quality} />
+      {titleVfxMode && (
+        <WorldVFXStage
+          activeWorld={activeWorld}
+          progress={progress}
+          phaseState={phaseState}
+          quality={quality}
+          reducedMotion={reducedMotion}
+          drawerOpen={mobileDrawerOpen}
+          detailOpen={detailOpen}
+        />
+      )}
       <FeaturedWorldRail
         worlds={worlds}
         activeWorld={activeWorld}
@@ -49,12 +63,13 @@ export function World({ progress, activeWorld, quality, pointer, sensor, onSelec
         quality={quality}
         onSelectWorld={onSelectWorld}
         haptics={haptics}
-        showCardLabels={showCardLabels}
-        showCardViewButtons={showCardViewButtons}
-        phase={phase}
+        showCardLabels={!hideSilhouetteHtml && phaseState.phase !== 'hero' && phaseState.showCardLabels}
+        showCardViewButtons={!hideSilhouetteHtml && !titleVfxMode && phaseState.phase !== 'hero' && phaseState.showCardViewButtons}
+        phase={phaseState.phase}
         mobileDrawerOpen={mobileDrawerOpen}
         detailOpen={detailOpen}
         isMobile={isMobile}
+        visualMode={DEFAULT_VISUAL_MODE}
       />
       <RiftBloom progress={progress} activeWorld={activeWorld} quality={quality} />
     </>
