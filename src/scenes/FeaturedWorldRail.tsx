@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Texture, TextureLoader, VideoTexture, SRGBColorSpace } from 'three';
+import { SRGBColorSpace, Texture, TextureLoader, VideoTexture } from 'three';
 import { featuredWorlds } from '../data/featuredWorlds';
 import type { QualityConfig } from '../systems/useQuality';
 import { PremiumGlassCard } from './PremiumGlassCard';
@@ -20,14 +20,16 @@ function useWorldMedia(index: number, activeIndex: number, quality: QualityConfi
   useEffect(() => {
     let disposed = false;
     let localTexture: Texture | null = null;
-    const activeDistance = Math.abs(index - activeIndex);
-    const canUseVideo = quality.enableVideo && activeDistance <= 1 && !!world.webm;
+    const distance = Math.abs(index - activeIndex);
+    const canUseVideo = quality.enableVideo && distance <= 1 && !!(world.webm || world.mp4);
 
     const cleanup = () => {
-      if (localTexture) localTexture.dispose();
+      if (localTexture) {
+        localTexture.dispose();
+      }
       if (videoRef.current) {
         videoRef.current.pause();
-        videoRef.current.src = '';
+        videoRef.current.removeAttribute('src');
         videoRef.current.load();
       }
       videoRef.current = null;
@@ -67,17 +69,17 @@ function useWorldMedia(index: number, activeIndex: number, quality: QualityConfi
 
       video.oncanplay = () => {
         if (disposed) return;
-        const vt = new VideoTexture(video);
-        vt.colorSpace = SRGBColorSpace;
-        localTexture = vt;
-        setTexture(vt);
+        const videoTexture = new VideoTexture(video);
+        videoTexture.colorSpace = SRGBColorSpace;
+        localTexture = videoTexture;
+        setTexture(videoTexture);
         void video.play().catch(() => {
           loadPoster();
         });
       };
 
       video.onerror = () => {
-        loadPoster();
+        if (!disposed) loadPoster();
       };
 
       video.load();
@@ -107,17 +109,9 @@ function WorldCard({
 }) {
   const world = featuredWorlds[index];
   const texture = useWorldMedia(index, activeIndex, quality);
-  const zOffset = (progress * (featuredWorlds.length - 1) - index) * 7.5;
+  const zOffset = (progress * (featuredWorlds.length - 1) - index) * 8.2;
 
-  return (
-    <PremiumGlassCard
-      world={world}
-      isActive={activeIndex === index}
-      media={texture}
-      onSelect={onSelect}
-      zOffset={zOffset}
-    />
-  );
+  return <PremiumGlassCard world={world} isActive={activeIndex === index} media={texture} onSelect={onSelect} zOffset={zOffset} />;
 }
 
 export function FeaturedWorldRail({ progress, activeIndex, quality, onSelectWorld }: FeaturedWorldRailProps) {
@@ -125,9 +119,9 @@ export function FeaturedWorldRail({ progress, activeIndex, quality, onSelectWorl
 
   return (
     <group>
-      {cards.map((_, index) => (
+      {cards.map((card, index) => (
         <WorldCard
-          key={cards[index].id}
+          key={card.id}
           index={index}
           activeIndex={activeIndex}
           progress={progress}

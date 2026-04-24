@@ -7,11 +7,11 @@ interface HotspotsProps {
 export function Hotspots({ onSelect }: HotspotsProps) {
   return (
     <group>
-      <mesh position={[-1.35, 1.7, -101.6]} onClick={onSelect}>
-        <sphereGeometry args={[0.11, 18, 18]} />
-        <meshStandardMaterial color="#d8e2ef" emissive="#93a6bf" emissiveIntensity={0.2} />
-        <Html center distanceFactor={10} position={[0.26, 0.12, 0]}>
-          <button className="hotspot-label" type="button" tabIndex={-1}>
+      <mesh position={[-1.9, 1.32, -99.8]} onClick={onSelect}>
+        <sphereGeometry args={[0.1, 16, 16]} />
+        <meshStandardMaterial color="#fff4cf" emissive="#ffd58d" emissiveIntensity={0.22} />
+        <Html center distanceFactor={11} position={[0.22, -0.18, 0]}>
+          <button className="hotspot-label" type="button" tabIndex={-1} data-cursor="interactive">
             View
           </button>
         </Html>

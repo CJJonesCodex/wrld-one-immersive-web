@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { usePointerIntent } from '../systems/usePointerIntent';
 
 export function RecoloredCursor() {
   const [visible, setVisible] = useState(false);
+  const intent = usePointerIntent();
 
   useEffect(() => {
     const isTouch = window.matchMedia('(pointer: coarse)').matches;
@@ -24,5 +26,5 @@ export function RecoloredCursor() {
     };
   }, []);
 
-  return <div className={`recolored-cursor ${visible ? 'visible' : ''}`} aria-hidden="true" />;
+  return <div className={`recolored-cursor ${visible ? 'visible' : ''} ${intent}`} aria-hidden="true" />;
 }

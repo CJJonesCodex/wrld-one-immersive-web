@@ -1,29 +1,30 @@
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Group } from 'three';
+import type { Group } from 'three';
 
 export function DepthMist() {
   const group = useRef<Group>(null);
   const planes = useMemo(
     () =>
-      Array.from({ length: 8 }).map((_, i) => ({
-        position: [((i % 2) - 0.5) * 8, 1.2 + i * 0.32, -18 - i * 24] as [number, number, number],
-        scale: 12 + i * 3,
+      Array.from({ length: 9 }).map((_, index) => ({
+        position: [((index % 3) - 1) * 4.4, 1.8 + index * 0.4, -22 - index * 23] as [number, number, number],
+        scale: 13 + index * 3,
+        tint: ['#fff6e9', '#fce0ff', '#d8eeff'][index % 3],
       })),
     [],
   );
 
   useFrame(({ clock }) => {
     if (!group.current) return;
-    group.current.position.y = Math.sin(clock.elapsedTime * 0.08) * 0.4;
+    group.current.position.y = Math.sin(clock.elapsedTime * 0.07) * 0.35;
   });
 
   return (
     <group ref={group}>
       {planes.map((plane) => (
         <mesh key={plane.position[2]} position={plane.position}>
-          <planeGeometry args={[plane.scale, plane.scale * 0.5]} />
-          <meshBasicMaterial color="#8ea0b8" transparent opacity={0.038} depthWrite={false} />
+          <planeGeometry args={[plane.scale, plane.scale * 0.52]} />
+          <meshBasicMaterial color={plane.tint} transparent opacity={0.05} depthWrite={false} />
         </mesh>
       ))}
     </group>

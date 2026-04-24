@@ -1,4 +1,4 @@
-import { FeaturedWorld } from '../data/featuredWorlds';
+import type { FeaturedWorld } from '../data/featuredWorlds';
 
 interface FeaturedWorksIndexProps {
   worlds: FeaturedWorld[];
@@ -11,7 +11,13 @@ interface FeaturedWorksIndexProps {
 export function FeaturedWorksIndex({ worlds, activeIndex, collapsed, onToggleCollapse, onSelect }: FeaturedWorksIndexProps) {
   return (
     <nav className={`featured-index ${collapsed ? 'collapsed' : ''}`} aria-label="Featured worlds index">
-      <button type="button" className="featured-index-toggle" onClick={onToggleCollapse} aria-label="Toggle featured worlds list">
+      <button
+        type="button"
+        className="featured-index-toggle"
+        onClick={onToggleCollapse}
+        aria-label="Toggle featured worlds list"
+        data-cursor="interactive"
+      >
         Featured Worlds
       </button>
       <ol>
@@ -22,6 +28,7 @@ export function FeaturedWorksIndex({ worlds, activeIndex, collapsed, onToggleCol
               className={activeIndex === index ? 'active' : ''}
               aria-label={`Go to ${world.title}`}
               onClick={() => onSelect(index)}
+              data-cursor="interactive"
             >
               <span>{world.indexLabel}</span>
               <em>{world.title}</em>

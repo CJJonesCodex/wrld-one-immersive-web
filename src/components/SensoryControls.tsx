@@ -17,13 +17,13 @@ export function SensoryControls({
 }: SensoryControlsProps) {
   return (
     <div className="sensory-controls" role="group" aria-label="Sensory controls">
-      <button type="button" aria-label="Toggle ambient sound" onClick={onToggleSound}>
+      <button type="button" aria-label="Toggle ambient sound" onClick={onToggleSound} data-cursor="interactive">
         Sound {soundOn ? 'ON' : 'OFF'}
       </button>
-      <button type="button" aria-label="Toggle haptic feedback" onClick={onToggleHaptics}>
+      <button type="button" aria-label="Toggle haptic feedback" onClick={onToggleHaptics} data-cursor="interactive">
         Haptic {hapticsOn ? 'ON' : 'OFF'}
       </button>
-      <button type="button" aria-label="Toggle 3D sensor controls" onClick={onToggleSensor}>
+      <button type="button" aria-label="Toggle 3D sensor controls" onClick={onToggleSensor} data-cursor="interactive">
         3D Sensor {sensorOn ? 'ON' : 'OFF'}
       </button>
     </div>
