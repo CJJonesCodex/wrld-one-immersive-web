@@ -1,43 +1,35 @@
-import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Group, MathUtils } from 'three';
+import { useMemo, useRef } from 'react';
+import * as THREE from 'three';
+import type { FeaturedWorld, QualityLevel } from '../types/world';
 
-export function WorldOrbs() {
-  const groupRef = useRef<Group>(null);
-  const orbs = useMemo(
-    () =>
-      Array.from({ length: 10 }).map((_, index) => ({
-        key: `orb-${index}`,
-        radius: 0.12 + (index % 4) * 0.07,
-        pos: [
-          (Math.random() - 0.5) * 8,
-          1.5 + Math.random() * 3.2,
-          -8 - index * 24 - Math.random() * 18,
-        ] as [number, number, number],
-        color: ['#ffd2bc', '#b2deff', '#d8c2ff', '#c6f2d9'][index % 4],
-      })),
-    [],
-  );
+interface WorldOrbsProps {
+  activeWorld: FeaturedWorld;
+  quality: QualityLevel;
+}
 
-  useFrame(({ clock }, delta) => {
-    if (!groupRef.current) return;
-    groupRef.current.rotation.y = MathUtils.damp(groupRef.current.rotation.y, Math.sin(clock.elapsedTime * 0.1) * 0.08, 2, delta);
+export function WorldOrbs({ activeWorld, quality }: WorldOrbsProps) {
+  const count = quality === 'low' ? 5 : quality === 'medium' ? 9 : 14;
+  const group = useRef<THREE.Group>(null);
+  const orbs = useMemo(() =>
+    Array.from({ length: count }, (_, i) => ({
+      p: [Math.sin(i * 1.7) * 3.2, -0.8 + (i % 6) * 0.55, -1.5 - i * 0.9] as [number, number, number],
+      r: 0.06 + (i % 5) * 0.04,
+      phase: i * 0.7,
+    })), [count]);
+
+  useFrame((state) => {
+    group.current?.children.forEach((child, i) => {
+      child.position.y = orbs[i].p[1] + Math.sin(state.clock.elapsedTime * 0.35 + orbs[i].phase) * 0.08;
+    });
   });
 
   return (
-    <group ref={groupRef}>
-      {orbs.map((orb, index) => (
-        <mesh key={orb.key} position={orb.pos}>
-          <sphereGeometry args={[orb.radius, 24, 24]} />
-          <meshStandardMaterial
-            color={orb.color}
-            emissive={orb.color}
-            emissiveIntensity={0.18 + (index % 3) * 0.05}
-            transparent
-            opacity={0.65}
-            roughness={0.3}
-            metalness={0.05}
-          />
+    <group ref={group}>
+      {orbs.map((orb, i) => (
+        <mesh key={i} position={orb.p}>
+          <sphereGeometry args={[orb.r, 16, 16]} />
+          <meshBasicMaterial transparent opacity={0.2} color={activeWorld.colors.accent} depthWrite={false} />
         </mesh>
       ))}
     </group>

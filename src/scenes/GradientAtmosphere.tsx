@@ -1,34 +1,24 @@
-import { useMemo } from 'react';
-import { BackSide, Color } from 'three';
 import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
-import type { Mesh } from 'three';
+import * as THREE from 'three';
+import type { FeaturedWorld, QualityLevel } from '../types/world';
 
-export function GradientAtmosphere() {
-  const shellRef = useRef<Mesh>(null);
-  const colors = useMemo(() => [new Color('#fff4df'), new Color('#ffd6ea'), new Color('#a7deff')], []);
+interface GradientAtmosphereProps {
+  activeWorld: FeaturedWorld;
+  progress: number;
+  quality: QualityLevel;
+}
 
-  useFrame(({ clock }) => {
-    if (!shellRef.current) return;
-    const t = clock.elapsedTime;
-    shellRef.current.rotation.y = t * 0.01;
-    const material = shellRef.current.material;
-    if (!Array.isArray(material)) {
-      material.opacity = 0.26 + Math.sin(t * 0.2) * 0.04;
-    }
+export function GradientAtmosphere({ activeWorld }: GradientAtmosphereProps) {
+  const matRef = useRef<THREE.MeshBasicMaterial>(null);
+  useFrame(() => {
+    if (!matRef.current) return;
+    matRef.current.color.lerp(new THREE.Color(activeWorld.colors.atmosphereA), 0.05);
   });
-
   return (
-    <mesh ref={shellRef} position={[0, 12, -96]}>
-      <sphereGeometry args={[180, 32, 32]} />
-      <meshBasicMaterial
-        side={BackSide}
-        transparent
-        opacity={0.28}
-        color={colors[0]}
-        depthWrite={false}
-        toneMapped={false}
-      />
+    <mesh>
+      <sphereGeometry args={[36, 24, 24]} />
+      <meshBasicMaterial ref={matRef} side={THREE.BackSide} transparent opacity={0.34} color={activeWorld.colors.atmosphereB} depthWrite={false} />
     </mesh>
   );
 }

@@ -1,28 +1,28 @@
+import type { FeaturedWorld, WorldId } from '../types/world';
+
 interface ScrollbarNavProps {
-  count: number;
-  activeIndex: number;
+  worlds: FeaturedWorld[];
+  activeWorldId: WorldId;
   progress: number;
-  onSelect: (index: number) => void;
+  onNavigate: (worldId: WorldId) => void;
+  orientation?: 'vertical' | 'horizontal';
 }
 
-export function ScrollbarNav({ count, activeIndex, progress, onSelect }: ScrollbarNavProps) {
+export function ScrollbarNav({ worlds, activeWorldId, progress, onNavigate, orientation = 'vertical' }: ScrollbarNavProps) {
   return (
-    <aside className="scrollbar-nav" aria-label="Scroll progress navigator">
-      <div className="scrollbar-track">
-        <span style={{ transform: `scaleY(${progress})` }} />
+    <div className="scrollbar-nav" data-orientation={orientation}>
+      <div className="scrollbar-nav__track">
+        <div className="scrollbar-nav__fill" style={orientation === 'vertical' ? { height: `${progress * 100}%` } : { width: `${progress * 100}%` }} />
       </div>
-      <div className="scrollbar-ticks">
-        {Array.from({ length: count }).map((_, index) => (
-          <button
-            type="button"
-            key={`tick-${index}`}
-            aria-label={`Navigate to world ${index + 1}`}
-            className={activeIndex === index ? 'active' : ''}
-            onClick={() => onSelect(index)}
-            data-cursor="interactive"
-          />
-        ))}
-      </div>
-    </aside>
+      {worlds.map((world) => (
+        <button
+          key={world.id}
+          className={`scrollbar-nav__tick tap-target ${world.id === activeWorldId ? 'is-active' : ''}`}
+          style={orientation === 'vertical' ? { top: `${world.scene.scrollTarget * 100}%` } : { left: `${world.scene.scrollTarget * 100}%` }}
+          onClick={() => onNavigate(world.id)}
+          aria-label={`Navigate to ${world.title}`}
+        />
+      ))}
+    </div>
   );
 }

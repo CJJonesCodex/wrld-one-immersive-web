@@ -1,170 +1,96 @@
-# WRLD ONE — Phase 4 Bright PRMO-Level Spatial Experience System
+# WRLD ONE — Phase 5.3 Spatial Interface
 
-WRLD ONE is a Vite + React + TypeScript + Three.js / React Three Fiber immersive website. Phase 4 evolves the prototype into a brighter, optimistic, premium spatial gallery while preserving the existing Core Chamber snail media benchmark.
+## Phase 5.3 summary
+This phase rebuilds WRLD ONE into a bright cinematic spatial gallery system: fixed fullscreen WebGL canvas, scroll-driven camera journey, featured-world rail, responsive HUD, and sensory controls.
 
-## Phase 4 Summary
+## PRMO-caliber interaction translation
+PRMO is used as interaction-quality reference only. WRLD ONE implementation is original in data model, copy, layout, visual language, and 3D composition.
 
-- Shifted visual identity from dark/minimal to bright cinematic gradients, pearl glass UI, and optimistic color atmospherics.
-- Implemented a 6-world **Featured Worlds** system with numbered index and spatial rail behavior.
-- Upgraded card language to premium luminous glass capsules with subtle motion, labels, and view affordances.
-- Added sensory micro-systems (Sound / Haptic / 3D Sensor), custom cursor intent states, and micro audio visualizer.
-- Preserved and elevated the snail media test as world `01` and world `03` continuity anchor.
+## Art direction
+**WRLD ONE is a luminous spatial gallery where featured worlds float through soft atmospheric light like living cinematic artifacts.**
 
-## PRMO-Inspired Interaction Principles (Original WRLD ONE Adaptation)
+## Exact color system
+- Background: `#fff8ec`, `#f6e9ff`, `#dff7ff`, `#eafbea`
+- Ink: `#17131f`, `#09070d`
+- Accents: `#ffd166`, `#ff7a66`, `#54d8ff`, `#a78bfa`, `#7cffb2`, `#fffdf7`, `#ffb4c8`
 
-- Featured Works becomes **Featured Worlds** with numbered discoverability.
-- Scroll is a cinematic camera journey through real 3D space.
-- Scrollbar acts as a spatial timeline navigator with tap/click world jumps.
-- Sensory controls stay explicit opt-in and lightweight.
-- Motion stays premium and calm with damping, depth haze, and subtle drift.
-- Identity remains original WRLD ONE (no PRMO copy/brand/assets/code).
+## Scroll map
+- `0.00–0.10`: entry
+- `0.10–0.20`: worlds intro
+- `0.20–0.72`: world rail
+- `0.72–0.84`: core focus
+- `0.84–0.94`: rift transition
+- `0.94–1.00`: final bloom
 
-## Bright WRLD ONE Visual Direction
+## Camera path
+Camera uses authored control points from near-front entry to deep bloom portal, with damped interpolation and limited pointer/sensor parallax.
 
-- Bright
-- Happy
-- Premium
-- Clean
-- Futuristic
-- Cinematic
-- Luminous
-- Optimistic
-- Spatial
+## FeaturedWorld data model
+Typed model includes IDs, status/category enums, media config, color tokens, and per-world scene composition metadata.
 
-## Featured Worlds System
+## PremiumGlassCard anatomy
+- Backing glass plate
+- Soft media plane (video/poster/procedural fallback)
+- Thin border/hairline behavior
+- Top-left index/title label
+- Lower-right View affordance
+- Expanded invisible hit area
 
-Data source: `src/data/featuredWorlds.ts`
+## Media lifecycle and fallback
+`useMediaTexture` centralizes media logic:
+- optional video (webm/mp4) when quality allows
+- poster fallback
+- procedural fallback when no media slot is available
+- cleanup for texture/video resources
 
-World set:
+## Sensor / sound / haptic behavior
+- Sound: user-triggered ambient oscillator bed only.
+- Haptic: optional navigator.vibrate pulse no-op fallback.
+- Sensor: optional DeviceOrientation permission flow with safe disable path.
 
-1. Living Macro Sample
-2. Signal Garden
-3. Core Chamber
-4. Aurora Passage
-5. Rift Bloom
-6. Future World Slot
+## Quality modes
+- **Low**: DPR 1, poster-only, minimal particles/orbs/ribbons.
+- **Medium**: DPR 1.5, one active video texture.
+- **High**: DPR 2, up to two active/near-active videos.
 
-Each world includes:
+## Mobile QA checklist
+- Open on iPhone.
+- No horizontal overflow.
+- Scroll reaches all worlds.
+- Bottom nav/ticks visible.
+- Menu opens drawer.
+- Drawer closes on outside tap.
+- Sound starts only after tap.
+- Audio visualizer appears only when sound is on.
+- Haptic does not error if unsupported.
+- 3D Sensor permission flow does not break.
+- Snail card is readable and not stretched.
+- No giant OPEN pill.
+- No cyan side bars.
+- Detail panel opens and closes.
+- Vercel build succeeds.
 
-- `id`, `indexLabel`, `title`, `shortDescription`
-- `categoryLabel`, `statusLabel`, `mediaSlotId`
-- `poster`, optional `mp4` / `webm`
-- `aspectRatio`, `colorAccent`, `gradientA`, `gradientB`
-- `worldPosition`, `rotation`, `depthLayer`
-- `mood`, `sensoryCue`
+## Vercel deployment checklist
+- `npm run build` passes.
+- No TS strict errors.
+- Static assets in `/public/media` resolve.
+- Environment settings unchanged from current Vercel project.
 
-## ScrollbarNav
+## Performance checklist
+- Fixed full-canvas render shell.
+- Quality-aware particle/orb/ribbon counts.
+- Limited concurrent video textures.
+- Event listener cleanup on unmount.
+- Reduced-motion support for animation minimization.
 
-File: `src/components/ScrollbarNav.tsx`
-
-- Thin progress rail + per-world ticks.
-- Tick tap/click snaps toward world index.
-- Styled as a non-blocking bright spatial timeline.
-
-## SensoryControls
-
-File: `src/components/SensoryControls.tsx`
-
-- Sound OFF/ON (never autoplayed)
-- Haptic OFF/ON (safe fallback if unsupported)
-- 3D Sensor OFF/ON (permission requested only after user action)
-
-Supporting systems:
-
-- `src/systems/useAmbientSound.ts`
-- `src/systems/useHaptics.ts`
-- `src/systems/useDeviceSensor.ts`
-
-## RecoloredCursor
-
-File: `src/components/RecoloredCursor.tsx`
-
-- Desktop-only minimal ring/dot cursor.
-- Hidden on touch devices and reduced-motion preference.
-- Reacts to interactive targets using `data-cursor="interactive"`.
-
-## AudioVisualizer
-
-File: `src/components/AudioVisualizer.tsx`
-
-- Visible only when sound is enabled.
-- Small analyser-based micro bars in soft bright tones.
-
-## Media Upload Locations
-
-Store media in `public/media/`.
-
-Current required assets:
-
-- `/media/core-poster.webp`
-- `/media/core-loop.mp4`
-- `/media/core-loop.webm`
-
-Optional additional world media can be added with matching paths in `featuredWorlds.ts`.
-
-If a media file is missing, cards fallback to poster and then procedural placeholder material (no crash).
-
-## How to Add a New Featured World
-
-1. Add a world entry in `src/data/featuredWorlds.ts`.
-2. Assign `indexLabel` and transform values (`worldPosition`, `rotation`, `depthLayer`).
-3. Point `poster` and optional `mp4/webm` to `public/media` paths.
-4. Provide color fields (`colorAccent`, `gradientA`, `gradientB`) and narrative fields (`mood`, `sensoryCue`).
-5. Validate scroll + index + scrollbar navigation.
-
-## Old-School Motion (No AI Video Dependency)
-
-- Ken Burns-like active card drift/scale.
-- Light sweep pass over active media surfaces.
-- Procedural fallback shading for missing media.
-- Floating depth mist and layered dust/sparkle particles.
-- Gentle pointer/sensor parallax blended into camera and card feel.
-
-## Phone QA Checklist
-
-- [ ] Experience clearly reads as 3D spatial web at first glance.
-- [ ] Scroll/touch exploration reveals worlds smoothly.
-- [ ] Featured index collapses cleanly on mobile.
-- [ ] Scrollbar ticks are tappable.
-- [ ] Sensory controls are legible and usable.
-- [ ] Sound remains opt-in only.
-- [ ] Sensor denied/unsupported path degrades gracefully.
-- [ ] Snail media sample remains visible and stable.
-- [ ] Frame pacing remains smooth on iPhone/Android.
-
-## Vercel Deployment Checklist
-
-- [ ] Build command: `npm run build`
-- [ ] Output directory: `dist`
-- [ ] `public/media` assets included
-- [ ] Preview URL validated on desktop and phone
-- [ ] Production deployment verified after QA
-
-## Performance Checklist
-
-- [ ] DPR clamped per quality mode.
-- [ ] Low quality: posters/fallbacks only, fewer particles, no video textures.
-- [ ] Medium quality: limited active-neighbor video textures.
-- [ ] High quality: stronger atmosphere while still limiting simultaneous video textures.
-- [ ] Inactive media pauses and resources are cleaned up.
-- [ ] Effects/listeners are cleaned up (audio, sensor, scroll loops).
-
-## Next Upgrade Path
-
-1. Real filmed video loops for each world.
-2. Image-sequence scroll playback.
-3. GLB architectural models.
-4. Compressed textures/transcoding pipeline.
-5. Restrained postprocessing (subtle bloom/vignette).
-6. Case-study detail panel transitions.
-7. Project-specific sound design.
-8. Brighter branded WRLD ONE design system.
-
-## Local Development
-
-```bash
-npm install
-npm run dev
-npm run build
-npm run preview
-```
+## Known future upgrades
+1. Add professionally filmed video loops.
+2. Replace procedural placeholders with real posters/video.
+3. Add GLB architectural objects per world.
+4. Compress GLB models with Draco.
+5. Compress textures with KTX2/Basis.
+6. Add image-sequence transitions for scroll moments.
+7. Refine camera motion with GSAP timelines.
+8. Build full case-study detail views.
+9. Create a dedicated WRLD ONE logo and typography system.
+10. Add project-specific sound design.

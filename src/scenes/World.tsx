@@ -1,58 +1,42 @@
-import { Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
 import { CameraRig } from './CameraRig';
-import { Particles } from './Particles';
-import { Hotspots } from './Hotspots';
-import { MediaPlanes } from './MediaPlanes';
-import { FeaturedWorldRail } from './FeaturedWorldRail';
-import { DepthMist } from './DepthMist';
 import { GradientAtmosphere } from './GradientAtmosphere';
+import { DepthMist } from './DepthMist';
 import { WorldOrbs } from './WorldOrbs';
-import type { QualityConfig } from '../systems/useQuality';
+import { ThinRibbons } from './ThinRibbons';
+import { FeaturedWorldRail } from './FeaturedWorldRail';
+import { RiftBloom } from './RiftBloom';
+import type { FeaturedWorld, QualityLevel, WorldId } from '../types/world';
+import type { PointerIntent } from '../systems/usePointerIntent';
+import type { DeviceSensorState } from '../systems/useDeviceSensor';
+import type { HapticsState } from '../systems/useHaptics';
 
 interface WorldProps {
   progress: number;
-  activeIndex: number;
-  quality: QualityConfig;
-  sensorOffset: { x: number; y: number };
-  soundOn: boolean;
-  onSelectWorld: (index: number) => void;
-  onReady: () => void;
+  activeWorld: FeaturedWorld;
+  selectedWorldId: WorldId | null;
+  quality: QualityLevel;
+  pointer: PointerIntent;
+  sensor: DeviceSensorState;
+  onSelectWorld: (worldId: WorldId) => void;
+  haptics: HapticsState;
+  worlds: FeaturedWorld[];
+  reducedMotion: boolean;
 }
 
-export function World({ progress, activeIndex, quality, sensorOffset, soundOn, onSelectWorld, onReady }: WorldProps) {
+export function World({ progress, activeWorld, quality, pointer, sensor, onSelectWorld, haptics, worlds, reducedMotion }: WorldProps) {
   return (
-    <Canvas
-      className="world-canvas"
-      camera={{ position: [0, 1.8, 8], fov: 47, near: 0.1, far: 360 }}
-      dpr={[1, quality.dpr]}
-      gl={{ antialias: quality.antialias, powerPreference: 'high-performance' }}
-      onCreated={onReady}
-    >
-      <color attach="background" args={['#f6f7ff']} />
-      <fog attach="fog" args={['#f8f1ff', 24, 280]} />
-      <ambientLight intensity={0.62} />
-      <directionalLight position={[5, 8, -14]} color="#ffe7bf" intensity={1.05 * quality.glowIntensity} />
-      <pointLight position={[-4, 4, -112]} color="#b0e3ff" intensity={0.9 * quality.glowIntensity} distance={160} />
-      <pointLight position={[2, 3, -175]} color="#ffc6de" intensity={0.55 * quality.glowIntensity} distance={120} />
-
-      <Suspense fallback={null}>
-        <GradientAtmosphere />
-        <WorldOrbs />
-        <DepthMist />
-        <Particles count={quality.particleCount} />
-        <FeaturedWorldRail
-          progress={progress}
-          activeIndex={activeIndex}
-          quality={quality}
-          soundReactive={soundOn}
-          onSelectWorld={onSelectWorld}
-        />
-        <MediaPlanes quality={quality} activeIndex={activeIndex} onSelectCore={() => onSelectWorld(2)} />
-        <Hotspots onSelect={() => onSelectWorld(2)} />
-      </Suspense>
-
-      <CameraRig progress={progress} sensorOffset={sensorOffset} />
-    </Canvas>
+    <>
+      <color attach="background" args={['#fff8ec']} />
+      <fog attach="fog" args={['#fff8ec', 7, 22]} />
+      <ambientLight intensity={0.65} />
+      <directionalLight position={[5, 6, 7]} intensity={1.1} color="#fff6dc" />
+      <CameraRig progress={progress} pointer={pointer} sensor={sensor} activeWorld={activeWorld} reducedMotion={reducedMotion} />
+      <GradientAtmosphere activeWorld={activeWorld} progress={progress} quality={quality} />
+      <DepthMist quality={quality} activeWorld={activeWorld} />
+      <WorldOrbs activeWorld={activeWorld} quality={quality} />
+      <ThinRibbons activeWorld={activeWorld} quality={quality} />
+      <FeaturedWorldRail worlds={worlds} activeWorld={activeWorld} progress={progress} quality={quality} onSelectWorld={onSelectWorld} haptics={haptics} />
+      <RiftBloom progress={progress} activeWorld={activeWorld} quality={quality} />
+    </>
   );
 }
