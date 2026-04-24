@@ -1,40 +1,28 @@
+import type { FeaturedWorld } from '../data/featuredWorlds';
 import type { QualityLevel } from '../systems/useQuality';
 
-export interface ZoneInfo {
-  id: string;
-  title: string;
-  description: string;
-  lore: string;
-  mediaSlot: string;
-  futureAssetHint: string;
-}
-
 interface HUDProps {
-  zone: ZoneInfo | null;
-  onClose: () => void;
+  activeWorld: FeaturedWorld;
+  panelWorld: FeaturedWorld | null;
+  progress: number;
   quality: QualityLevel;
   setQuality: (level: QualityLevel) => void;
-  progress: number;
+  onClosePanel: () => void;
 }
 
 const qualityLevels: QualityLevel[] = ['low', 'medium', 'high'];
 
-export function HUD({ zone, onClose, quality, setQuality, progress }: HUDProps) {
+export function HUD({ activeWorld, panelWorld, progress, quality, setQuality, onClosePanel }: HUDProps) {
   return (
     <>
       <header className="hud-top">
         <div>
-          <p className="hud-label">WRLD ONE GATE</p>
-          <p className="hud-sub">Scroll to travel • Touch/move to steer subtle parallax</p>
+          <p className="hud-label">WRLD ONE</p>
+          <p className="hud-sub">{activeWorld.indexLabel} · {activeWorld.title}</p>
         </div>
-        <div className="quality-switch" role="group" aria-label="quality">
+        <div className="quality-switch" role="group" aria-label="Rendering quality">
           {qualityLevels.map((level) => (
-            <button
-              key={level}
-              className={quality === level ? 'active' : ''}
-              onClick={() => setQuality(level)}
-              type="button"
-            >
+            <button key={level} className={level === quality ? 'active' : ''} type="button" onClick={() => setQuality(level)}>
               {level}
             </button>
           ))}
@@ -42,29 +30,24 @@ export function HUD({ zone, onClose, quality, setQuality, progress }: HUDProps) 
       </header>
 
       <aside className="hud-mini">
-        <p>World Progress</p>
+        <p>Scroll to explore featured projects</p>
         <strong>{Math.round(progress * 100)}%</strong>
-        <small>W/S or ↑/↓ nudges camera • ESC closes active panel</small>
+        <small>ESC closes details</small>
       </aside>
 
-      {zone ? (
+      {panelWorld ? (
         <>
-          <button
-            aria-label="Close details"
-            className="hud-backdrop"
-            type="button"
-            onClick={onClose}
-          />
-          <section className="hud-panel" role="dialog" aria-label={`${zone.title} details`}>
-            <button className="hud-close" onClick={onClose} type="button" aria-label="Close panel">
+          <button type="button" className="hud-backdrop" aria-label="Close panel" onClick={onClosePanel} />
+          <section className="hud-panel" role="dialog" aria-label={`${panelWorld.title} details`}>
+            <button className="hud-close" onClick={onClosePanel} type="button" aria-label="Close panel">
               ✕
             </button>
-            <p className="hud-zone">{zone.id}</p>
-            <h2>{zone.title}</h2>
-            <p>{zone.description}</p>
-            <p className="hud-meta"><strong>Lore:</strong> {zone.lore}</p>
-            <p className="hud-meta"><strong>Media Slot:</strong> {zone.mediaSlot}</p>
-            <p className="hud-meta"><strong>Asset Note:</strong> {zone.futureAssetHint}</p>
+            <p className="hud-zone">{panelWorld.indexLabel}</p>
+            <h2>{panelWorld.title}</h2>
+            <p>{panelWorld.shortDescription}</p>
+            <p className="hud-meta"><strong>Category:</strong> {panelWorld.categoryLabel}</p>
+            <p className="hud-meta"><strong>Status:</strong> {panelWorld.statusLabel}</p>
+            <p className="hud-meta"><strong>Media Slot:</strong> {panelWorld.mediaSlotId}</p>
           </section>
         </>
       ) : null}

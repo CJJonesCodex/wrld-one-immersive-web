@@ -1,83 +1,62 @@
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { CatmullRomCurve3, MathUtils, Vector2, Vector3 } from 'three';
 
 interface CameraRigProps {
   progress: number;
+  sensorOffset: { x: number; y: number };
 }
 
-export function CameraRig({ progress }: CameraRigProps) {
+export function CameraRig({ progress, sensorOffset }: CameraRigProps) {
   const { camera, pointer } = useThree();
-  const keyboardOffset = useRef(0);
-  const pointerTarget = useRef(new Vector2(0, 0));
+  const blendedPointer = useRef(new Vector2(0, 0));
 
   const cameraCurve = useMemo(
     () =>
-      new CatmullRomCurve3(
-        [
-          new Vector3(0, 1.8, 9),
-          new Vector3(0, 2.3, -8),
-          new Vector3(2.8, 2.5, -56),
-          new Vector3(-2.9, 2.9, -106),
-          new Vector3(0, 2.4, -183),
-        ],
-        false,
-        'catmullrom',
-        0.35,
-      ),
+      new CatmullRomCurve3([
+        new Vector3(0, 1.7, 10),
+        new Vector3(0, 1.9, -18),
+        new Vector3(1.2, 2.2, -58),
+        new Vector3(-1.5, 2.35, -101),
+        new Vector3(0.3, 2.2, -148),
+        new Vector3(-0.2, 1.8, -188),
+      ]),
     [],
   );
 
   const lookCurve = useMemo(
     () =>
       new CatmullRomCurve3([
-        new Vector3(0, 1.8, -14),
-        new Vector3(0.8, 2.2, -48),
-        new Vector3(-1.5, 2.5, -98),
-        new Vector3(0, 2.7, -165),
-        new Vector3(0, 2.2, -205),
+        new Vector3(0, 1.8, -16),
+        new Vector3(0.2, 2, -42),
+        new Vector3(-0.6, 2.2, -82),
+        new Vector3(0.8, 2.4, -120),
+        new Vector3(0.2, 2.1, -180),
       ]),
     [],
   );
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'w' || event.key === 'ArrowUp') {
-        keyboardOffset.current = MathUtils.clamp(keyboardOffset.current - 0.8, -5, 5);
-      }
-      if (event.key === 's' || event.key === 'ArrowDown') {
-        keyboardOffset.current = MathUtils.clamp(keyboardOffset.current + 0.8, -5, 5);
-      }
-    };
-
-    const onTouchMove = (event: TouchEvent) => {
-      const t = event.touches[0];
-      if (!t) return;
-      pointerTarget.current.set((t.clientX / window.innerWidth) * 2 - 1, -(t.clientY / window.innerHeight) * 2 + 1);
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('touchmove', onTouchMove, { passive: true });
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('touchmove', onTouchMove);
-    };
-  }, []);
-
   useFrame((_, delta) => {
-    pointerTarget.current.lerp(pointer, 1 - Math.exp(-delta * 2.7));
+    const mixedX = pointer.x * 0.7 + sensorOffset.x * 0.3;
+    const mixedY = pointer.y * 0.7 + sensorOffset.y * 0.3;
+    blendedPointer.current.lerp(new Vector2(mixedX, mixedY), 1 - Math.exp(-delta * 2.4));
 
-    const curvePos = cameraCurve.getPoint(MathUtils.clamp(progress, 0, 1));
-    const lookPos = lookCurve.getPoint(MathUtils.clamp(progress, 0, 1));
+    const path = MathUtils.clamp(progress, 0, 1);
+    const curvePos = cameraCurve.getPoint(path);
+    const lookPos = lookCurve.getPoint(path);
 
-    const parallaxX = pointerTarget.current.x * 0.55;
-    const parallaxY = pointerTarget.current.y * 0.28;
+    const target = new Vector3(
+      curvePos.x + blendedPointer.current.x * 0.28 + Math.sin(path * Math.PI * 2) * 0.12,
+      curvePos.y + blendedPointer.current.y * 0.2,
+      curvePos.z,
+    );
 
-    const target = new Vector3(curvePos.x + parallaxX, curvePos.y + parallaxY, curvePos.z + keyboardOffset.current);
-    camera.position.lerp(target, 1 - Math.exp(-delta * 2.4));
-
-    const lookTarget = new Vector3(lookPos.x + parallaxX * 0.4, lookPos.y + parallaxY * 0.25, lookPos.z + keyboardOffset.current * 0.85);
-    camera.lookAt(lookTarget);
+    camera.position.lerp(target, 1 - Math.exp(-delta * 2.6));
+    camera.lookAt(
+      lookPos.x + blendedPointer.current.x * 0.13,
+      lookPos.y + blendedPointer.current.y * 0.08,
+      lookPos.z,
+    );
   });
 
   return null;
