@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Html } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { Mesh, MeshStandardMaterial, SRGBColorSpace, Texture, TextureLoader, VideoTexture } from 'three';
+import * as THREE from 'three';
+import { MeshStandardMaterial, SRGBColorSpace, Texture, TextureLoader, VideoTexture } from 'three';
 import { mediaManifest, type MediaSlot } from '../data/mediaManifest';
 import type { QualityConfig } from '../systems/useQuality';
 
@@ -173,8 +174,8 @@ function ProceduralScreen({ intensity, width, height }: { intensity: number; wid
 function MediaPlane({ slot, quality }: { slot: MediaSlot; quality: QualityConfig }) {
   const { map, requiresActivation, activate } = useMediaTexture(slot, quality);
   const anchor = anchors[slot.zoneId];
-  const frameRef = useRef<Mesh>(null);
-  const contentRef = useRef<Mesh>(null);
+  const frameRef = useRef<THREE.Mesh>(null);
+  const contentRef = useRef<THREE.Group>(null);
   const isCore = slot.id === 'core-loop';
 
   const baseHeight = 3;
