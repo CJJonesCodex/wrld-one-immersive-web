@@ -15,37 +15,49 @@ const hotspots: HotspotData[] = [
   {
     id: 'ZONE-01',
     title: 'Entry Gate',
-    description: 'A ringed checkpoint where travelers sync with WRLD ONE signal frequencies.',
-    position: [0, 2.2, -8],
+    description: 'A giant portal ring that calibrates incoming travelers before corridor insertion.',
+    lore: 'The gate listens for harmonic keys and then opens a safe lane.',
+    mediaSlot: 'gate-loop',
+    futureAssetHint: 'Upload /public/media/gate-loop.webm + gate-loop.mp4 and gate-poster.webp.',
+    position: [0, 3, -11],
   },
   {
     id: 'ZONE-02',
     title: 'Signal Corridor',
-    description: 'Floating panel arrays transmit glyph streams and directional telemetry pulses.',
-    position: [2.2, 2.8, -52],
+    description: 'Lateral drift space where data-panels pulse with route telemetry.',
+    lore: 'Corridor glyphs reveal hidden branch paths based on resonance timing.',
+    mediaSlot: 'corridor-loop',
+    futureAssetHint: 'Upload /public/media/corridor-loop.webm + corridor-loop.mp4 and corridor-poster.webp.',
+    position: [3.8, 3.05, -56],
   },
   {
     id: 'ZONE-03',
     title: 'Core Chamber',
-    description: 'Energy nodes orbit the core lattice, revealing stable routes through fractured space.',
-    position: [-2.6, 2.4, -102],
+    description: 'An orbiting nexus of energy arcs wrapped around the world core.',
+    lore: 'Core pulses synchronize every cycle to keep the realm stable.',
+    mediaSlot: 'core-loop',
+    futureAssetHint: 'Upload /public/media/core-loop.webm + core-loop.mp4 and core-poster.webp.',
+    position: [-3.6, 3, -105],
   },
   {
     id: 'ZONE-04',
     title: 'Rift Exit',
-    description: 'A volatile portal shell that bends light before opening into the next world.',
-    position: [0, 2.7, -160],
+    description: 'The final portal frame where spacetime distortion peaks before transition.',
+    lore: 'Crossing at peak charge grants a cleaner jump into the next chapter.',
+    mediaSlot: 'rift-loop',
+    futureAssetHint: 'Upload /public/media/rift-loop.webm + rift-loop.mp4 and rift-poster.webp.',
+    position: [0, 3.2, -164],
   },
 ];
 
 function HotspotMesh({ position, onClick }: MeshProps & { onClick: () => void }) {
   return (
     <mesh position={position} onClick={onClick}>
-      <sphereGeometry args={[0.35, 20, 20]} />
-      <meshStandardMaterial color="#7ce1ff" emissive="#54d2ff" emissiveIntensity={1.5} />
-      <Html center distanceFactor={12}>
+      <sphereGeometry args={[0.28, 18, 18]} />
+      <meshStandardMaterial color="#8de7ff" emissive="#4ec7ef" emissiveIntensity={1.75} />
+      <Html center distanceFactor={11}>
         <button className="hotspot-label" type="button" tabIndex={-1}>
-          inspect
+          open
         </button>
       </Html>
     </mesh>

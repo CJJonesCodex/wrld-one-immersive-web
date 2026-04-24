@@ -1,38 +1,61 @@
-# WRLD ONE GATE — Immersive 3D Website Prototype
+# WRLD ONE GATE — Phase 2 Cinematic Spatial Media Upgrade
 
-A production-style prototype for **WRLD ONE BUILD** built as a full-screen, scroll-driven 3D browser experience.
+This project is a full-screen immersive 3D web experience built with Vite + React + TypeScript + Three.js via React Three Fiber. The Phase 1 foundation remains intact while Phase 2 upgrades camera choreography, layered architecture, media surfaces, hotspot storytelling, and mobile-first polish.
 
-Instead of a flat 2D landing page, this app renders a cinematic dark sci-fi world where users move through spatial zones:
+## Phase 2 Summary
 
-1. Entry Gate
-2. Signal Corridor
-3. Core Chamber
-4. Rift Exit
+- Cinematic scroll camera path with damped interpolation across 4 narrative zones.
+- Layered depth/scale architecture (foreground portal rings, corridor ribs, silhouettes, grid bridge, distant portal frame, energy cable lines).
+- New media manifest + 3D media plane system with safe video loading and fallback placeholders.
+- Upgraded hotspots and HUD narrative payload per zone.
+- Quality-aware behavior for DPR, particles, glow intensity, and video enablement.
+- Mobile touch parallax and HUD interaction polish.
 
-## Stack
+## 3D Media System
 
-- Vite
-- React + TypeScript
-- Three.js via `@react-three/fiber`
-- `@react-three/drei`
-- GSAP (installed and ready for timeline choreography)
-- Lenis (installed and ready for alternate smooth-scroll orchestration)
+### Files
 
-## Features Included
+- Manifest: `src/data/mediaManifest.ts`
+- Renderer: `src/scenes/MediaPlanes.tsx`
+- Upload guide: `public/media/README.md`
 
-- Full-screen WebGL canvas
-- Scroll-controlled forward movement through 3D space
-- Pointer/touch parallax camera response
-- 4 unique zones composed with primitive geometry (rings, panels, nodes, grid, particles, rift)
-- Clickable 3D hotspots that open HUD information panels
-- Loading screen UI
-- WebGL fallback message
-- Mobile-friendly responsive HUD
-- Keyboard controls:
-  - `W/S` or `↑/↓` = nudge camera
-  - `Esc` = close HUD panel
-- Quality selector (`Low`, `Medium`, `High`)
-- DPR clamp for performance
+### How it works
+
+1. `mediaManifest` defines four optional media slots (`gate-loop`, `corridor-loop`, `core-loop`, `rift-loop`).
+2. `MediaPlanes` creates floating cinematic planes in matching world zones.
+3. It attempts `.webm` first, then `.mp4`, then poster texture.
+4. If no media assets exist (or loading fails), it uses animated procedural placeholder materials.
+5. Video playback is muted + looped + inline and defers to user interaction if autoplay is blocked.
+
+## Uploading Videos/Images via GitHub + Vercel
+
+1. Add files to `public/media/` with exact names below.
+2. Commit and push to GitHub.
+3. Vercel deploy will include files automatically.
+4. Visit deployed URL and test each zone hotspot/media plane.
+
+### Required / Recommended file names
+
+- `/media/gate-loop.mp4`
+- `/media/gate-loop.webm`
+- `/media/gate-poster.webp`
+- `/media/corridor-loop.mp4`
+- `/media/corridor-loop.webm`
+- `/media/corridor-poster.webp`
+- `/media/core-loop.mp4`
+- `/media/core-loop.webm`
+- `/media/core-poster.webp`
+- `/media/rift-loop.mp4`
+- `/media/rift-loop.webm`
+- `/media/rift-poster.webp`
+
+### Recommended video sizes (Vercel + mobile)
+
+- Preferred resolution: `1280x720`
+- Maximum practical resolution: `1920x1080`
+- Duration: `4-12s` seamless loops
+- Bitrate target: `3-8 Mbps`
+- Keep each file as small as practical for fast startup and reduced mobile thermal load
 
 ## Local Development
 
@@ -41,93 +64,39 @@ npm install
 npm run dev
 ```
 
-Open the local URL shown by Vite (typically `http://localhost:5173`).
-
-## Production Build
+## Build
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## Deploy to Vercel
+## Manual QA Checklist (Phone-focused)
 
-### Option A: Vercel dashboard
+- [ ] Canvas is full-screen and no horizontal scroll appears.
+- [ ] Scroll feels smooth and progresses through Entry Gate → Signal Corridor → Core Chamber → Rift Exit.
+- [ ] Touch drag creates subtle camera parallax.
+- [ ] Hotspots are easy to tap and open a compact HUD panel.
+- [ ] Tap outside panel (backdrop) closes HUD on mobile.
+- [ ] `Esc` closes HUD on desktop.
+- [ ] Quality selector changes particle density + visual intensity.
+- [ ] Missing media files show animated placeholders, not broken textures.
+- [ ] If videos are uploaded, planes display looping footage and remain muted inline.
+- [ ] `npm run build` succeeds.
 
-1. Push this repository to GitHub.
-2. In Vercel, click **Add New Project**.
-3. Import the repo.
-4. Framework preset: **Vite** (usually auto-detected).
-5. Build command: `npm run build`
-6. Output directory: `dist`
-7. Deploy.
+## Vercel Deployment Checklist
 
-### Option B: Vercel CLI
+- [ ] Repo connected to Vercel project.
+- [ ] Build command: `npm run build`.
+- [ ] Output directory: `dist`.
+- [ ] Media files committed under `public/media/`.
+- [ ] Deploy preview verified on desktop + phone.
+- [ ] Production redeploy after QA pass.
 
-```bash
-npm i -g vercel
-vercel
-vercel --prod
-```
+## Next Upgrade Path
 
-
-## Sandbox Build Verification Note
-
-Codex could not fully verify `npm install` and `npm run build` in this sandbox because the environment returned `403 Forbidden` from `registry.npmjs.org` while resolving packages.
-
-In a normal npm-enabled environment, run:
-
-```bash
-npm install
-npm run build
-```
-
-## Manual QA Checklist (No screenshots)
-
-Use this checklist locally after dependencies install successfully:
-
-- [ ] Launch with `npm run dev` and confirm full-screen 3D canvas renders (not a flat sectioned page).
-- [ ] Scroll down/up and verify camera traverses forward/backward through all four zones.
-- [ ] Move mouse/finger and verify subtle parallax response in camera framing.
-- [ ] Click/tap each hotspot and confirm the HUD panel opens with correct zone info.
-- [ ] Press `Esc` and confirm the HUD panel closes.
-- [ ] Press `W/S` and `↑/↓` on desktop to verify camera nudge controls.
-- [ ] Switch quality Low/Medium/High and confirm visual/performance changes (DPR + particle density).
-- [ ] Confirm loading overlay appears during initialization and dismisses when world is ready.
-- [ ] Disable hardware acceleration / test incompatible browser and confirm WebGL fallback message appears.
-- [ ] On mobile viewport, verify HUD remains usable and scene interaction remains smooth.
-- [ ] Run `npm run build` and `npm run preview`; verify production build serves correctly.
-
-## Replacing primitives with GLB models later
-
-Current zones use procedural meshes so the prototype is lightweight and self-contained.
-
-To upgrade visuals with production assets:
-
-1. Export optimized `.glb` files from Blender/C4D.
-2. Compress with Draco + meshopt (where appropriate).
-3. Place assets in `public/models/`.
-4. Replace primitive groups in `src/scenes/ZoneObjects.tsx` with `useGLTF('/models/asset.glb')`.
-5. Keep hotspot anchors and camera path logic unchanged so interaction behavior remains consistent.
-6. Add baked emissive textures and light probes for improved performance on mobile.
-
-## Roadmap (next evolution)
-
-To move toward the feel of Chrono Threads, Rose Island, Spline/Webflow 3D sites, Luma-style interactive scenes, and PRM-like immersion:
-
-1. **Narrative Motion Direction**
-   - GSAP timeline choreography for zone transitions, reveals, and cinematic camera beats.
-2. **Asset Pipeline**
-   - Hero environment kits, animated gates, VFX sprites, volumetric fog cards, shader-driven portals.
-3. **Interaction Layer**
-   - Branching hotspot flows, guided missions, stateful progression, and diegetic UI prompts.
-4. **Visual Fidelity**
-   - Post-processing stack (bloom, DOF, chromatic aberration), material layering, animated decals.
-5. **Performance Discipline**
-   - Dynamic quality autoscaling, geometry instancing, texture atlas pipeline, frame budgeting by device tier.
-6. **Authoring & CMS Bridge (future)**
-   - Optional content schema for zone copy and event scripting to support iterative story publishing.
-
----
-
-This foundation is intentionally implementation-ready for local development and direct deployment to Vercel.
+1. Replace primitives with optimized GLB models.
+2. Add compressed textures and asset atlases.
+3. Add cinematic high-quality video loops for each zone.
+4. Add real portal transitions between world states.
+5. Add spatial audio + optional haptics later.
