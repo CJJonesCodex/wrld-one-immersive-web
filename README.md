@@ -1,102 +1,157 @@
-# WRLD ONE GATE — Phase 2 Cinematic Spatial Media Upgrade
+# WRLD ONE — Phase 3 PRM-Level Spatial Interface System
 
-This project is a full-screen immersive 3D web experience built with Vite + React + TypeScript + Three.js via React Three Fiber. The Phase 1 foundation remains intact while Phase 2 upgrades camera choreography, layered architecture, media surfaces, hotspot storytelling, and mobile-first polish.
+WRLD ONE is a Vite + React + TypeScript + Three.js / React Three Fiber immersive web system. Phase 3 upgrades the prototype into a premium black spatial interface language inspired by high-end interaction patterns (without copying any external brand assets, copy, or layouts).
 
-## Phase 2 Summary
+## Phase 3 Summary
 
-- Cinematic scroll camera path with damped interpolation across 4 narrative zones.
-- Layered depth/scale architecture (foreground portal rings, corridor ribs, silhouettes, grid bridge, distant portal frame, energy cable lines).
-- New media manifest + 3D media plane system with safe video loading and fallback placeholders.
-- Upgraded hotspots and HUD narrative payload per zone.
-- Quality-aware behavior for DPR, particles, glow intensity, and video enablement.
-- Mobile touch parallax and HUD interaction polish.
+- Added a cinematic **Featured Worlds** data model and numbered project rail.
+- Added PRM-style interaction primitives: sensory controls, scroll timeline nav, featured index, custom cursor, and micro audio visualizer.
+- Reworked 3D card language into monochrome premium glass cards with restrained accents.
+- Preserved the **Core Chamber snail media test** while removing chunky bright-blue prototype styling.
+- Kept mobile-first performance controls and stable Vercel deployment flow.
 
-## 3D Media System
+## PRM-Inspired Interaction Principles (Original WRLD ONE Interpretation)
 
-### Files
+- Scroll is spatial navigation, not page content reveal.
+- Works are discoverable as a numbered editorial index.
+- Cards exist in real 3D depth and fog, not flat DOM sections.
+- Sensory toggles are explicit opt-in (sound, haptic, sensor).
+- Motion is calm, cinematic, and damped.
+- Visual language is near-black, soft white, thin borders, and restrained cyan only for tiny details.
 
-- Manifest: `src/data/mediaManifest.ts`
-- Renderer: `src/scenes/MediaPlanes.tsx`
-- Upload guide: `public/media/README.md`
+## Featured Worlds System
 
-### How it works
+Data source: `src/data/featuredWorlds.ts`
 
-1. `mediaManifest` defines four optional media slots (`gate-loop`, `corridor-loop`, `core-loop`, `rift-loop`).
-2. `MediaPlanes` creates floating cinematic planes in matching world zones.
-3. It attempts `.webm` first, then `.mp4`, then poster texture.
-4. If no media assets exist (or loading fails), it uses animated procedural placeholder materials.
-5. Video playback is muted + looped + inline and defers to user interaction if autoplay is blocked.
+Each world entry includes:
 
-## Uploading Videos/Images via GitHub + Vercel
+- `id`, `indexLabel`, `title`, `shortDescription`
+- `categoryLabel`, `statusLabel`, `mediaSlotId`
+- `poster`, optional `mp4` / `webm`
+- `aspectRatio`, `colorAccent`
+- `worldPosition`, `rotation`, `depthLayer`
 
-1. Add files to `public/media/` with exact names below.
-2. Commit and push to GitHub.
-3. Vercel deploy will include files automatically.
-4. Visit deployed URL and test each zone hotspot/media plane.
+### Current worlds
 
-### Required / Recommended file names
+1. Living Macro Sample
+2. Signal Architecture
+3. Core Chamber
+4. Rift Exit
+5. Future World Slot
 
-- `/media/gate-loop.mp4`
-- `/media/gate-loop.webm`
-- `/media/gate-poster.webp`
-- `/media/corridor-loop.mp4`
-- `/media/corridor-loop.webm`
-- `/media/corridor-poster.webp`
+## ScrollbarNav
+
+File: `src/components/ScrollbarNav.tsx`
+
+- Thin vertical timeline UI with ticks per world.
+- Fill amount reflects current scroll progress.
+- Tick click/tap navigates to the linked world.
+- Designed to stay lightweight and non-blocking for the scene.
+
+## SensoryControls
+
+File: `src/components/SensoryControls.tsx`
+
+- Sound OFF/ON
+- Haptic OFF/ON
+- 3D Sensor OFF/ON
+
+Supporting systems:
+
+- `src/systems/useAmbientSound.ts` (Web Audio ambient hum, opt-in only)
+- `src/systems/useHaptics.ts` (`navigator.vibrate` safe fallback)
+- `src/systems/useDeviceSensor.ts` (permission-gated orientation control)
+
+## RecoloredCursor
+
+File: `src/components/RecoloredCursor.tsx`
+
+- Desktop-only cursor ring/dot overlay.
+- Hidden on touch devices and reduced-motion preference.
+- Minimal rendering overhead and no heavy filters.
+
+## AudioVisualizer
+
+File: `src/components/AudioVisualizer.tsx`
+
+- Shown only when sound is enabled.
+- Uses analyser frequency bins for subtle micro-bars.
+- Quiet monochrome styling to match HUD language.
+
+## Media Upload Locations
+
+Place assets under `public/media/`.
+
+Current expected paths include:
+
+- `/media/core-poster.webp`
 - `/media/core-loop.mp4`
 - `/media/core-loop.webm`
-- `/media/core-poster.webp`
-- `/media/rift-loop.mp4`
-- `/media/rift-loop.webm`
-- `/media/rift-poster.webp`
+- plus optional slots for corridor/rift/future assets.
 
-### Recommended video sizes (Vercel + mobile)
+If a file is missing, the system falls back to procedural placeholder rendering instead of crashing.
 
-- Preferred resolution: `1280x720`
-- Maximum practical resolution: `1920x1080`
-- Duration: `4-12s` seamless loops
-- Bitrate target: `3-8 Mbps`
-- Keep each file as small as practical for fast startup and reduced mobile thermal load
+## Add a New Featured World
+
+1. Add an entry in `src/data/featuredWorlds.ts`.
+2. Provide world transform values (`worldPosition`, `rotation`, `depthLayer`).
+3. Add media paths (poster required, video optional).
+4. Ensure index label ordering remains sequential.
+5. Test navigation through FeaturedWorksIndex + ScrollbarNav + scroll path.
+
+## Old-School Motion Without AI Video
+
+The experience intentionally uses classic motion craft:
+
+- Ken Burns-like media drift and scale emphasis.
+- Slow light sweep overlays on active cards.
+- Procedural fallback surfaces for missing media.
+- Depth mist planes and layered dust particles.
+- Gentle parallax from pointer/touch/sensor blend.
+
+## Phone QA Checklist
+
+- [ ] iPhone/Android loads full-screen with no layout overflow.
+- [ ] Scroll progression feels smooth and non-jittery.
+- [ ] Featured index can collapse/expand on mobile.
+- [ ] Scrollbar ticks are tappable.
+- [ ] Sensory controls are readable and tappable.
+- [ ] No forced sound playback.
+- [ ] Sensor toggle failure is graceful if permission denied.
+- [ ] Core Chamber media still appears or cleanly falls back.
+- [ ] Build remains stable and responsive thermally.
+
+## Vercel Deployment Checklist
+
+- [ ] Build command: `npm run build`
+- [ ] Output directory: `dist`
+- [ ] `public/media` assets committed
+- [ ] Preview deploy validated on desktop + phone
+- [ ] Production deploy verified after QA
+
+## Performance Checklist
+
+- [ ] DPR is clamped by quality profile.
+- [ ] Low mode uses posters/fallbacks and fewer particles.
+- [ ] Video textures are limited to active/nearby cards.
+- [ ] Inactive media is paused/cleaned up.
+- [ ] No memory leaks from audio/sensor listeners.
+
+## Next Upgrade Path
+
+1. Real filmed video loops for each world.
+2. Image-sequence scroll playback for hero worlds.
+3. GLB architectural models with LOD.
+4. Compressed textures + optimized transcoding.
+5. Restrained postprocessing (subtle bloom/vignette only).
+6. Case-study detail transitions between rail and panel.
+7. Project-specific sound design layers.
 
 ## Local Development
 
 ```bash
 npm install
 npm run dev
-```
-
-## Build
-
-```bash
 npm run build
 npm run preview
 ```
-
-## Manual QA Checklist (Phone-focused)
-
-- [ ] Canvas is full-screen and no horizontal scroll appears.
-- [ ] Scroll feels smooth and progresses through Entry Gate → Signal Corridor → Core Chamber → Rift Exit.
-- [ ] Touch drag creates subtle camera parallax.
-- [ ] Hotspots are easy to tap and open a compact HUD panel.
-- [ ] Tap outside panel (backdrop) closes HUD on mobile.
-- [ ] `Esc` closes HUD on desktop.
-- [ ] Quality selector changes particle density + visual intensity.
-- [ ] Missing media files show animated placeholders, not broken textures.
-- [ ] If videos are uploaded, planes display looping footage and remain muted inline.
-- [ ] `npm run build` succeeds.
-
-## Vercel Deployment Checklist
-
-- [ ] Repo connected to Vercel project.
-- [ ] Build command: `npm run build`.
-- [ ] Output directory: `dist`.
-- [ ] Media files committed under `public/media/`.
-- [ ] Deploy preview verified on desktop + phone.
-- [ ] Production redeploy after QA pass.
-
-## Next Upgrade Path
-
-1. Replace primitives with optimized GLB models.
-2. Add compressed textures and asset atlases.
-3. Add cinematic high-quality video loops for each zone.
-4. Add real portal transitions between world states.
-5. Add spatial audio + optional haptics later.
