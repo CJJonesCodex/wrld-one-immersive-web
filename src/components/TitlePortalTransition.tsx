@@ -64,9 +64,9 @@ export function TitlePortalTransition({
         '--world-accent': preset.accent,
         '--break-progress': revealRuntime.breakProgress,
         '--reveal-progress': revealRuntime.revealProgress,
-        opacity: continuity.titleOpacity,
+        opacity: hidden ? 0 : continuity.titleOpacity,
       }) as CSSProperties,
-    [preset, revealRuntime.breakProgress, revealRuntime.revealProgress, continuity.titleOpacity],
+    [preset, revealRuntime.breakProgress, revealRuntime.revealProgress, continuity.titleOpacity, hidden],
   );
 
   const hideCta = continuity.titleMode !== 'full' || (revealRuntime.phase === 'breakaway' && revealRuntime.breakProgress > 0.3);
