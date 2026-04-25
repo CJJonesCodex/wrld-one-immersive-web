@@ -33,22 +33,22 @@ export function ScreenSpaceWorldReveal({
   detailOpen,
 }: ScreenSpaceWorldRevealProps) {
   const computedOpacity = useMemo(() => {
-    let nextOpacity = continuity.showWorldReveal ? continuity.revealOpacity : 0;
+    let nextOpacity = continuity.showHero ? 0 : Math.max(continuity.revealOpacity, 0.65);
 
-    if (!continuity.showHero && continuity.titleOpacity < 0.25) {
-      nextOpacity = Math.max(nextOpacity, 0.55);
+    if (!continuity.showHero && continuity.titleOpacity < 0.5) {
+      nextOpacity = Math.max(nextOpacity, 0.85);
     }
 
-    if (!continuity.showHero && continuity.titleMode === 'hidden') {
-      nextOpacity = Math.max(nextOpacity, 0.75);
-    }
-
-    if (revealRuntime.phase === 'revealed' || revealRuntime.phase === 'exit') {
-      nextOpacity = Math.max(nextOpacity, 0.75);
+    if (
+      revealRuntime.phase === 'breakaway' ||
+      revealRuntime.phase === 'revealed' ||
+      revealRuntime.phase === 'exit'
+    ) {
+      nextOpacity = Math.max(nextOpacity, 0.9);
     }
 
     if (drawerOpen || detailOpen) {
-      nextOpacity = Math.max(0.16, nextOpacity * 0.4);
+      nextOpacity = Math.max(0.22, nextOpacity * 0.5);
     }
 
     if (continuity.showHero) {
@@ -76,6 +76,12 @@ export function ScreenSpaceWorldReveal({
     '--reveal-progress': revealRuntime.revealProgress,
   };
 
+  const anchorOpacity = continuity.showHero
+    ? 0
+    : revealRuntime.phase === 'breakaway' || revealRuntime.phase === 'revealed' || revealRuntime.phase === 'exit'
+      ? 0.85
+      : 0.5;
+
   return (
     <div
       className="screen-world-reveal"
@@ -88,6 +94,10 @@ export function ScreenSpaceWorldReveal({
       <div className="screen-world-reveal__field" />
       <div className="screen-world-reveal__structure" />
       <div className="screen-world-reveal__particles" />
+      <div className="screen-world-reveal__anchor" style={{ '--anchor-opacity': anchorOpacity } as CSSProperties}>
+        <span>{activeWorld.indexLabel}</span>
+        <strong>{activeWorld.title}</strong>
+      </div>
     </div>
   );
 }

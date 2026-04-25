@@ -76,6 +76,7 @@ export function World({
       <ThinRibbons activeWorld={activeWorld} quality={quality} />
       {titleVfxMode && (
         <>
+          {/* Phase 5.12: WebGL reveal layers remain active but are secondary to the DOM screen-space visibility lock. */}
           <WorldVFXStage
             activeWorld={activeWorld}
             progress={progress}
