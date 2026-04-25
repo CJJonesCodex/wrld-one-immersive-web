@@ -1,0 +1,147 @@
+.screen-world-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: var(--reveal-opacity, 0);
+  overflow: hidden;
+  transition: opacity 220ms var(--ease-soft);
+  contain: layout paint;
+}
+
+.screen-world-reveal__field,
+.screen-world-reveal__structure,
+.screen-world-reveal__particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.screen-world-reveal__field {
+  background:
+    radial-gradient(circle at 24% 38%, color-mix(in srgb, var(--world-primary) 28%, transparent), transparent 30%),
+    radial-gradient(circle at 76% 56%, color-mix(in srgb, var(--world-secondary) 26%, transparent), transparent 34%),
+    linear-gradient(135deg, rgba(255, 248, 236, 0.38), transparent);
+  filter: blur(0.2px);
+}
+
+.screen-world-reveal__structure {
+  opacity: 0.92;
+}
+
+.screen-world-reveal__particles {
+  opacity: 0.72;
+  transform: translate3d(0, 0, 0);
+  will-change: opacity, transform;
+}
+
+.screen-world-reveal[data-world='living-macro'] .screen-world-reveal__structure {
+  background:
+    radial-gradient(circle at 18% 64%, rgba(124, 255, 178, 0.24) 0 10%, transparent 11%),
+    radial-gradient(circle at 58% 38%, rgba(255, 209, 102, 0.18) 0 4%, transparent 5%),
+    linear-gradient(80deg, transparent 0 44%, rgba(86, 217, 135, 0.14) 45% 47%, transparent 48%),
+    linear-gradient(105deg, transparent 0 55%, rgba(18, 53, 31, 0.1) 56% 57%, transparent 58%);
+}
+
+.screen-world-reveal[data-world='living-macro'] .screen-world-reveal__particles {
+  background-image:
+    radial-gradient(circle, rgba(86, 217, 135, 0.34) 0 3px, transparent 4px),
+    radial-gradient(circle, rgba(255, 209, 102, 0.28) 0 2px, transparent 3px);
+  background-size: 110px 130px, 160px 150px;
+  animation: macroDrift 12s linear infinite;
+}
+
+.screen-world-reveal[data-world='signal-garden'] .screen-world-reveal__structure {
+  background:
+    linear-gradient(160deg, transparent 0 42%, rgba(84, 216, 255, 0.22) 43% 44%, transparent 45%),
+    linear-gradient(165deg, transparent 0 58%, rgba(6, 47, 66, 0.16) 59% 60%, transparent 61%),
+    radial-gradient(circle at 68% 42%, rgba(84, 216, 255, 0.18) 0 8%, transparent 9%);
+}
+
+.screen-world-reveal[data-world='signal-garden'] .screen-world-reveal__particles {
+  background-image: radial-gradient(circle, rgba(84, 216, 255, 0.34) 0 3px, transparent 4px);
+  background-size: 92px 92px;
+  animation: signalPulse 5s ease-in-out infinite;
+}
+
+.screen-world-reveal[data-world='core-chamber'] .screen-world-reveal__structure {
+  background:
+    radial-gradient(circle at 50% 48%, transparent 0 12%, rgba(167, 139, 250, 0.22) 13% 14%, transparent 15% 24%, rgba(255, 209, 102, 0.18) 25% 26%, transparent 27%),
+    radial-gradient(circle at 52% 48%, rgba(167, 139, 250, 0.18), transparent 38%);
+}
+
+.screen-world-reveal[data-world='aurora-passage'] .screen-world-reveal__structure {
+  background:
+    linear-gradient(165deg, transparent 0 28%, rgba(255, 122, 102, 0.24) 29% 36%, transparent 37%),
+    linear-gradient(158deg, transparent 0 45%, rgba(167, 139, 250, 0.22) 46% 53%, transparent 54%),
+    linear-gradient(172deg, transparent 0 61%, rgba(255, 180, 200, 0.18) 62% 66%, transparent 67%);
+  animation: auroraSlide 9s ease-in-out infinite alternate;
+}
+
+.screen-world-reveal[data-world='rift-bloom'] .screen-world-reveal__structure {
+  background: conic-gradient(from 35deg at 50% 48%, rgba(255, 209, 102, 0.26), rgba(84, 216, 255, 0.18), rgba(255, 253, 247, 0.28), rgba(255, 209, 102, 0.26));
+  -webkit-mask-image: radial-gradient(circle at 50% 48%, rgba(0, 0, 0, 1) 0 42%, transparent 62%);
+  mask-image: radial-gradient(circle at 50% 48%, rgba(0, 0, 0, 1) 0 42%, transparent 62%);
+  opacity: 0.75;
+}
+
+.screen-world-reveal[data-world='future-world'] .screen-world-reveal__structure {
+  background:
+    linear-gradient(30deg, transparent 0 48%, rgba(124, 255, 178, 0.18) 49% 50%, transparent 51%),
+    linear-gradient(120deg, transparent 0 62%, rgba(23, 36, 25, 0.12) 63% 64%, transparent 65%);
+}
+
+.screen-world-reveal[data-world='future-world'] .screen-world-reveal__particles {
+  background-image:
+    radial-gradient(circle, rgba(124, 255, 178, 0.28) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(255, 253, 247, 0.35) 0 1px, transparent 2px);
+  background-size: 82px 92px, 140px 120px;
+  animation: constellationBreathe 7s ease-in-out infinite;
+}
+
+@keyframes macroDrift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-32px, -48px, 0);
+  }
+}
+
+@keyframes signalPulse {
+  0%,
+  100% {
+    opacity: 0.32;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes auroraSlide {
+  from {
+    transform: translate3d(-2%, -1%, 0);
+  }
+  to {
+    transform: translate3d(2%, 1%, 0);
+  }
+}
+
+@keyframes constellationBreathe {
+  0%,
+  100% {
+    opacity: 0.28;
+  }
+  50% {
+    opacity: 0.66;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen-world-reveal__particles,
+  .screen-world-reveal__structure {
+    animation: none !important;
+  }
+}

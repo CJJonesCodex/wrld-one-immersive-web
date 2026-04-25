@@ -51,6 +51,7 @@ export function MobileDrawer({
       <aside className={`mobile-drawer ${open ? 'is-open' : ''}`}>
         {showViewportToggleInside && (
           <div className="mobile-drawer__viewport-mode">
+            <p className="mobile-drawer__section-label">Display Mode</p>
             <ViewportModeToggle mode={viewportMode} onToggle={onToggleViewportMode} compact />
           </div>
         )}

@@ -22,6 +22,7 @@ import { useWorldRevealRuntime } from './systems/useWorldRevealRuntime';
 import { useViewportMode } from './systems/useViewportMode';
 import { ViewportModeToggle } from './components/ViewportModeToggle';
 import { getVisualContinuityState } from './systems/useVisualContinuity';
+import { ScreenSpaceWorldReveal } from './components/ScreenSpaceWorldReveal';
 import { logContinuityWarnings } from './utils/devWarnings';
 
 function App() {
@@ -93,6 +94,14 @@ function App() {
 
       <div className="hud-layer">
         <div className="scene-veil" style={{ opacity: sceneVeilOpacity }} />
+        <ScreenSpaceWorldReveal
+          activeWorld={activeWorld}
+          continuity={continuity}
+          revealRuntime={revealRuntime}
+          isMobileFit={viewportMode.isMobileFit}
+          drawerOpen={drawerOpen}
+          detailOpen={Boolean(selectedWorld)}
+        />
         <HeroOverlay progress={progress} showHero={phaseState.showHero} />
         <TitlePortalTransition
           activeWorld={activeWorld}
