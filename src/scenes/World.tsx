@@ -12,6 +12,11 @@ import type { DeviceSensorState } from '../systems/useDeviceSensor';
 import type { HapticsState } from '../systems/useHaptics';
 import type { ScenePhaseState } from '../systems/useScenePhase';
 import { DEFAULT_VISUAL_MODE } from '../config/visualMode';
+import type { WorldRevealRuntime } from '../types/reveal';
+import type { VfxPreset } from '../data/worldVfxPresets';
+import { getWorldRevealPreset } from '../data/worldRevealPresets';
+import { TitleBreakParticles } from './TitleBreakParticles';
+import { WorldRevealStage } from './WorldRevealStage';
 
 interface WorldProps {
   progress: number;
@@ -28,11 +33,14 @@ interface WorldProps {
   mobileDrawerOpen: boolean;
   detailOpen: boolean;
   isMobile: boolean;
+  revealRuntime: WorldRevealRuntime;
+  vfxPreset: VfxPreset;
 }
 
-export function World({ progress, activeWorld, quality, pointer, sensor, onSelectWorld, haptics, worlds, reducedMotion, phaseState, mobileDrawerOpen, detailOpen, isMobile }: WorldProps) {
+export function World({ progress, activeWorld, quality, pointer, sensor, onSelectWorld, haptics, worlds, reducedMotion, phaseState, mobileDrawerOpen, detailOpen, isMobile, revealRuntime, vfxPreset }: WorldProps) {
   const titleVfxMode = DEFAULT_VISUAL_MODE === 'title-vfx';
   const hideSilhouetteHtml = detailOpen || (isMobile && mobileDrawerOpen) || titleVfxMode;
+  const revealPreset = getWorldRevealPreset(activeWorld.id);
 
   return (
     <>
@@ -46,15 +54,36 @@ export function World({ progress, activeWorld, quality, pointer, sensor, onSelec
       <WorldOrbs activeWorld={activeWorld} quality={quality} />
       <ThinRibbons activeWorld={activeWorld} quality={quality} />
       {titleVfxMode && (
-        <WorldVFXStage
-          activeWorld={activeWorld}
-          progress={progress}
-          phaseState={phaseState}
-          quality={quality}
-          reducedMotion={reducedMotion}
-          drawerOpen={mobileDrawerOpen}
-          detailOpen={detailOpen}
-        />
+        <>
+          <WorldVFXStage
+            activeWorld={activeWorld}
+            progress={progress}
+            phaseState={phaseState}
+            quality={quality}
+            reducedMotion={reducedMotion}
+            drawerOpen={mobileDrawerOpen}
+            detailOpen={detailOpen}
+          />
+          <WorldRevealStage
+            activeWorld={activeWorld}
+            revealRuntime={revealRuntime}
+            vfxPreset={vfxPreset}
+            quality={quality}
+            isMobileFit={isMobile}
+            reducedMotion={reducedMotion}
+            drawerOpen={mobileDrawerOpen}
+            detailOpen={detailOpen}
+          />
+          <TitleBreakParticles
+            activeWorld={activeWorld}
+            revealPreset={revealPreset}
+            revealRuntime={revealRuntime}
+            vfxPreset={vfxPreset}
+            quality={quality}
+            isMobileFit={isMobile}
+            reducedMotion={reducedMotion}
+          />
+        </>
       )}
       <FeaturedWorldRail
         worlds={worlds}

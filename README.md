@@ -1,57 +1,63 @@
-# WRLD ONE — Phase 5.6 Text Monument VFX Worlds
+# WRLD ONE — Phase 5.9 Title Portal Breakaway World Reveals
 
-## Phase 5.6 summary
-Phase 5.6 introduces a switchable visual architecture where the default presentation is now **text-first**: one huge active world title monument plus one procedural VFX identity per world. Media cards are retained as a fallback mode and are not deleted.
+## Phase 5.9 summary
+Phase 5.9 upgrades the title-vfx experience from static title cards to **title portals**. Each active world title appears as a large readable monument first, then breaks apart via world-specific choreography to reveal a true abstract 3D world behind it.
 
-## Visual modes
-- `title-vfx` (default): giant active title + procedural VFX hero.
-- `media-cards`: restores picture/media-card-first presentation.
+## Title-as-portal concept
+- Typography is the door.
+- VFX is the unlocking motion.
+- The revealed world is behind the broken title.
 
-Switch mode in:
-- `src/config/visualMode.ts`
+## Reveal runtime phases
+1. `pre`
+2. `intro`
+3. `hold`
+4. `breakaway`
+5. `revealed`
+6. `exit`
 
-```ts
-export const DEFAULT_VISUAL_MODE: VisualMode = 'title-vfx';
-```
+The runtime is scroll-driven and reversible. If users scroll backward, title fragments and world reveal values reverse smoothly.
 
-## World VFX presets
-1. Living Macro → organic dew shimmer.
-2. Signal Garden → signal lines + node pulses.
-3. Core Chamber → concentric halo system.
-4. Aurora Passage → ribbon refraction field.
-5. Rift Bloom → petal aperture bloom.
-6. Future World → constellation blueprint field.
+## Per-world breakaway styles
+1. Living Macro → dew dissolve.
+2. Signal Garden → signal slice.
+3. Core Chamber → halo collapse.
+4. Aurora Passage → ribbon smear.
+5. Rift Bloom → petal aperture.
+6. Future World → constellation deconstruct.
 
-## No-clutter scene behavior
-- Hero phase keeps only site hero messaging.
-- Title monument starts after hero threshold.
-- One active title only.
-- One View CTA only.
-- Drawer/detail states dim or hide title stage.
-- In title-vfx mode, media cards remain subdued silhouettes.
+## Per-world abstract reveal stages
+1. Living Macro → botanical dew field.
+2. Signal Garden → glass signal flora.
+3. Core Chamber → calm halo engine.
+4. Aurora Passage → chromatic ribbon corridor.
+5. Rift Bloom → portal flower aperture.
+6. Future World → coordinate constellation field.
+
+## Mobile-fit safety
+- One world reveal active at a time.
+- Reduced density for particles/object counts.
+- Title fragmentation can use safer chunking in mobile-fit.
+- Title/CTA remain usable before breakaway.
+- Avoid horizontal overflow.
+
+## Reduced-motion behavior
+- Dramatic shatter/scatter is softened.
+- Breakaway uses fade/short slide behavior.
+- World reveal fades in softly.
+- Particle density is heavily reduced.
 
 ## Performance notes
-- One active VFX component only.
-- Quality levels control particle/line/ring/ribbon counts.
-- No hidden videos in `title-vfx` mode.
-- No post-processing dependency added.
-
-## Mobile QA checklist
-- [ ] Menu remains readable and unobstructed.
-- [ ] Title does not overflow horizontally.
-- [ ] Exactly one active title and one View CTA.
-- [ ] Drawer open suppresses title readability.
-- [ ] Detail panel takes visual priority.
-- [ ] Build passes with no TypeScript errors.
-
-## Vercel deployment checklist
-- [ ] `npm run build` passes.
-- [ ] App remains Vite + React + TypeScript + R3F.
-- [ ] Existing Vercel setup unchanged.
+- Keep Vite + React + TypeScript + R3F.
+- Keep title-vfx mode and media-card fallback mode.
+- Keep existing VFX preset systems.
+- One active reveal system only.
+- Dispose/avoid heavy hidden VFX work.
+- `npm run build` must pass.
 
 ## Future upgrades
-1. Add professionally filmed loops back into `media-cards` mode.
-2. Add custom GLB objects per text VFX world.
-3. Refine title transitions with GSAP if desired.
-4. Add sound-reactive VFX intensity.
-5. Add case-study detail panels for each world.
+1. Replace abstract worlds with custom GLB environments.
+2. Add filmed media reveals after title break.
+3. Add depth-map reveal shaders.
+4. Add GSAP timeline smoothing (if needed).
+5. Strengthen sound-reactive reveals after performance testing.

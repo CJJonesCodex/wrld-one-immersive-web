@@ -11,12 +11,14 @@ import { useHaptics } from './systems/useHaptics';
 import { useDeviceSensor } from './systems/useDeviceSensor';
 import { HeroOverlay } from './components/HeroOverlay';
 import { HUD } from './components/HUD';
-import { WorldTitleOverlay } from './components/WorldTitleOverlay';
 import { WorldDetailPanel } from './components/WorldDetailPanel';
 import { RecoloredCursor } from './components/RecoloredCursor';
 import type { WorldId } from './types/world';
 import { useReducedMotion } from './systems/useReducedMotion';
 import { getScenePhase } from './systems/useScenePhase';
+import { TitlePortalTransition } from './components/TitlePortalTransition';
+import { getWorldVfxPreset } from './data/worldVfxPresets';
+import { useWorldRevealRuntime } from './systems/useWorldRevealRuntime';
 
 function App() {
   const [selectedWorldId, setSelectedWorldId] = useState<WorldId | null>(null);
@@ -33,6 +35,8 @@ function App() {
 
   const selectedWorld = useMemo(() => (selectedWorldId ? getWorldById(selectedWorldId) ?? null : null), [selectedWorldId]);
   const phaseState = getScenePhase(progress, isMobile);
+  const revealRuntime = useWorldRevealRuntime({ activeWorldId: activeWorld.id, progress });
+  const activePreset = getWorldVfxPreset(activeWorld.id);
 
   const sceneVeilOpacity = selectedWorld ? 0.28 : drawerOpen ? 0.22 : phaseState.showHero ? 0.18 : 0;
 
@@ -56,6 +60,8 @@ function App() {
             mobileDrawerOpen={drawerOpen}
             detailOpen={Boolean(selectedWorld)}
             isMobile={isMobile}
+            revealRuntime={revealRuntime}
+            vfxPreset={activePreset}
           />
         </Canvas>
       </div>
@@ -63,15 +69,19 @@ function App() {
       <div className="hud-layer">
         <div className="scene-veil" style={{ opacity: sceneVeilOpacity }} />
         <HeroOverlay progress={progress} showHero={phaseState.showHero} />
-        <WorldTitleOverlay
+        <TitlePortalTransition
           activeWorld={activeWorld}
-          progress={progress}
-          phaseState={phaseState}
-          selectedWorldId={selectedWorldId}
+          preset={activePreset}
+          revealRuntime={revealRuntime}
+          isMobileFit={isMobile}
+          reducedMotion={reducedMotion}
           drawerOpen={drawerOpen}
-          onOpenWorld={(worldId) => {
+          detailOpen={Boolean(selectedWorld)}
+          phase={phaseState.phase}
+          selectedWorldId={selectedWorldId}
+          onView={() => {
             haptics.pulse(12);
-            setSelectedWorldId(worldId);
+            setSelectedWorldId(activeWorld.id);
           }}
         />
         <HUD
