@@ -4,11 +4,15 @@ import type { VfxPreset } from '../data/worldVfxPresets';
 import { getWorldRevealPreset } from '../data/worldRevealPresets';
 import type { WorldRevealRuntime } from '../types/reveal';
 import { DEFAULT_VISUAL_MODE } from '../config/visualMode';
+import type { ViewportMode } from '../systems/useViewportMode';
+import type { VisualContinuityState } from '../systems/visualContinuity';
 
 interface TitlePortalTransitionProps {
   activeWorld: FeaturedWorld;
   preset: VfxPreset;
   revealRuntime: WorldRevealRuntime;
+  continuity: VisualContinuityState;
+  viewportMode: ViewportMode;
   isMobileFit: boolean;
   reducedMotion: boolean;
   drawerOpen: boolean;
@@ -32,6 +36,8 @@ export function TitlePortalTransition({
   activeWorld,
   preset,
   revealRuntime,
+  continuity,
+  viewportMode,
   isMobileFit,
   reducedMotion,
   drawerOpen,
@@ -42,8 +48,9 @@ export function TitlePortalTransition({
 }: TitlePortalTransitionProps) {
   if (DEFAULT_VISUAL_MODE !== 'title-vfx') return null;
   const revealPreset = getWorldRevealPreset(activeWorld.id);
-
-  const hidden = phase === 'hero' || drawerOpen || detailOpen || Boolean(selectedWorldId) || revealRuntime.phase === 'pre';
+  const overlayOpen = drawerOpen || detailOpen || Boolean(selectedWorldId);
+  const canHideTitle = continuity.showWorldReveal && continuity.revealOpacity >= 0.75;
+  const hidden = phase === 'hero' || !continuity.showTitlePortal || (overlayOpen && continuity.revealOpacity >= 0.16 && canHideTitle);
 
   const byWord = isMobileFit;
   const lines = preset.titleLines.map((line) => splitLine(line, byWord));
@@ -57,21 +64,23 @@ export function TitlePortalTransition({
         '--world-accent': preset.accent,
         '--break-progress': revealRuntime.breakProgress,
         '--reveal-progress': revealRuntime.revealProgress,
+        opacity: continuity.titleOpacity,
       }) as CSSProperties,
-    [preset, revealRuntime.breakProgress, revealRuntime.revealProgress],
+    [preset, revealRuntime.breakProgress, revealRuntime.revealProgress, continuity.titleOpacity],
   );
 
-  const hideCta = revealRuntime.phase === 'breakaway' && revealRuntime.breakProgress > 0.3;
-  const hideMicrocopy = revealRuntime.phase === 'breakaway' && isMobileFit && typeof window !== 'undefined' && window.innerHeight <= 720;
+  const hideCta = continuity.titleMode !== 'full' || (revealRuntime.phase === 'breakaway' && revealRuntime.breakProgress > 0.3);
+  const hideMicrocopy = continuity.titleMode === 'compact' || continuity.titleMode === 'ghost' || (revealRuntime.phase === 'breakaway' && isMobileFit && typeof window !== 'undefined' && window.innerHeight <= 720);
 
   let globalIndex = 0;
 
   return (
     <section
-      className={`title-portal ${hidden ? 'is-hidden' : ''} ${reducedMotion ? 'is-reduced-motion' : ''}`}
+      className={`title-portal ${hidden ? 'is-hidden' : ''} title-portal--${continuity.titleMode} ${reducedMotion ? 'is-reduced-motion' : ''}`}
       data-world={activeWorld.id}
       data-break-style={revealPreset.breakStyle}
       data-mobile-fit={String(isMobileFit)}
+      data-viewport-mode={viewportMode}
       data-phase={revealRuntime.phase}
       style={style}
       aria-hidden={hidden}
