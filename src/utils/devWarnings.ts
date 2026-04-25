@@ -30,3 +30,20 @@ export function logContinuityWarnings(args: {
   }
 }
 
+
+export function warnIfBlankRisk(args: {
+  phase: string;
+  titleOpacity: number;
+  revealOpacity: number;
+  screenRevealOpacity: number;
+}) {
+  if (
+    import.meta.env.DEV &&
+    args.phase !== 'hero' &&
+    args.titleOpacity <= 0.05 &&
+    args.revealOpacity <= 0.05 &&
+    args.screenRevealOpacity <= 0.05
+  ) {
+    console.warn('[WRLD ONE] Blank-risk state detected', args);
+  }
+}
