@@ -12,6 +12,7 @@ import type { DeviceSensorState } from '../systems/useDeviceSensor';
 import type { ScenePhaseState } from '../systems/useScenePhase';
 import { scrollToProgress } from '../systems/useScrollProgress';
 import { DEFAULT_VISUAL_MODE } from '../config/visualMode';
+import type { ViewportMode } from '../systems/useViewportMode';
 
 interface HUDProps {
   progress: number;
@@ -26,9 +27,30 @@ interface HUDProps {
   sensor: DeviceSensorState;
   phaseState: ScenePhaseState;
   isMobile: boolean;
+  viewportMode: ViewportMode;
+  isMobileFit: boolean;
+  showStandaloneToggle: boolean;
+  onToggleViewportMode: () => void;
 }
 
-export function HUD({ progress, activeWorld, selectedWorld, featuredWorlds, onSelectWorld, onSetDrawerOpen, drawerOpen, sound, haptics, sensor, phaseState, isMobile }: HUDProps) {
+export function HUD({
+  progress,
+  activeWorld,
+  selectedWorld,
+  featuredWorlds,
+  onSelectWorld,
+  onSetDrawerOpen,
+  drawerOpen,
+  sound,
+  haptics,
+  sensor,
+  phaseState,
+  isMobile,
+  viewportMode,
+  isMobileFit,
+  showStandaloneToggle,
+  onToggleViewportMode,
+}: HUDProps) {
   const nav = useMemo(
     () => [
       { label: 'Top', target: 0 },
@@ -45,7 +67,6 @@ export function HUD({ progress, activeWorld, selectedWorld, featuredWorlds, onSe
   const showReadout = !titleVfxMode && phaseState.showActiveReadout && !(isMobile && (drawerOpen || detailOpen));
   const showScrollbar = phaseState.showScrollbarNav && !(isMobile && (drawerOpen || detailOpen));
 
-  // Text-budget rule: centrally gate layers so hero / drawer / detail never compete with every HUD system.
   return (
     <>
       <div className="global-brand">
@@ -63,13 +84,21 @@ export function HUD({ progress, activeWorld, selectedWorld, featuredWorlds, onSe
         </div>
       )}
 
-      <button className="sensory-button hud-mobile-menu" onClick={() => onSetDrawerOpen(!drawerOpen)} aria-label="Toggle mobile menu">{drawerOpen ? 'Close' : 'Menu'}</button>
+      <button className="sensory-button hud-mobile-menu" onClick={() => onSetDrawerOpen(!drawerOpen)} aria-label="Toggle mobile menu">
+        {drawerOpen ? 'Close' : 'Menu'}
+      </button>
 
-      {!isMobile && !phaseState.showHero && <div className="sensory-controls-wrap"><SensoryControls sound={sound} haptics={haptics} sensor={sensor} activeAccent={activeWorld.colors.accent} /></div>}
+      {!isMobile && !phaseState.showHero && (
+        <div className="sensory-controls-wrap">
+          <SensoryControls sound={sound} haptics={haptics} sensor={sensor} activeAccent={activeWorld.colors.accent} />
+        </div>
+      )}
 
       {showDesktopIndex && <FeaturedWorksIndex worlds={featuredWorlds} activeWorldId={activeWorld.id} onNavigate={onSelectWorld} />}
-      {showScrollbar && <ScrollbarNav worlds={featuredWorlds} activeWorldId={activeWorld.id} progress={progress} onNavigate={onSelectWorld} orientation={isMobile ? 'horizontal' : 'vertical'} />}
-      {showReadout && <ActiveWorldReadout world={activeWorld} progress={progress} isMobile={isMobile} />}
+      {showScrollbar && (
+        <ScrollbarNav worlds={featuredWorlds} activeWorldId={activeWorld.id} progress={progress} onNavigate={onSelectWorld} orientation={isMobile ? 'horizontal' : 'vertical'} isMobileFit={isMobileFit} />
+      )}
+      {showReadout && <ActiveWorldReadout world={activeWorld} progress={progress} isMobile={isMobile} isMobileFit={isMobileFit} />}
 
       <AudioVisualizer enabled={sound.enabled && !phaseState.showHero && !drawerOpen && !detailOpen} accent={activeWorld.colors.accent} />
 
@@ -83,6 +112,9 @@ export function HUD({ progress, activeWorld, selectedWorld, featuredWorlds, onSe
         haptics={haptics}
         sensor={sensor}
         activeAccent={activeWorld.colors.accent}
+        viewportMode={viewportMode}
+        showViewportToggleInside={!showStandaloneToggle && isMobile}
+        onToggleViewportMode={onToggleViewportMode}
       />
     </>
   );

@@ -4,11 +4,15 @@ import type { VfxPreset } from '../data/worldVfxPresets';
 import { getWorldRevealPreset } from '../data/worldRevealPresets';
 import type { WorldRevealRuntime } from '../types/reveal';
 import { DEFAULT_VISUAL_MODE } from '../config/visualMode';
+import type { VisualContinuityState } from '../systems/useVisualContinuity';
+import type { ViewportMode } from '../systems/useViewportMode';
 
 interface TitlePortalTransitionProps {
   activeWorld: FeaturedWorld;
   preset: VfxPreset;
   revealRuntime: WorldRevealRuntime;
+  continuity: VisualContinuityState;
+  viewportMode: ViewportMode;
   isMobileFit: boolean;
   reducedMotion: boolean;
   drawerOpen: boolean;
@@ -32,6 +36,8 @@ export function TitlePortalTransition({
   activeWorld,
   preset,
   revealRuntime,
+  continuity,
+  viewportMode,
   isMobileFit,
   reducedMotion,
   drawerOpen,
@@ -43,7 +49,18 @@ export function TitlePortalTransition({
   if (DEFAULT_VISUAL_MODE !== 'title-vfx') return null;
   const revealPreset = getWorldRevealPreset(activeWorld.id);
 
-  const hidden = phase === 'hero' || drawerOpen || detailOpen || Boolean(selectedWorldId) || revealRuntime.phase === 'pre';
+  const drawerOwnsScreen = (drawerOpen || detailOpen || Boolean(selectedWorldId)) && continuity.revealOpacity >= 0.16;
+  const mayHideForReveal = !continuity.showTitlePortal && continuity.revealOpacity >= 0.75;
+  const hidden = phase === 'hero' || drawerOwnsScreen || mayHideForReveal;
+
+  if (hidden && phase !== 'hero' && !(continuity.showWorldReveal && continuity.revealOpacity >= 0.75)) {
+    // keep title alive in compact mode until reveal is definitely visible
+  }
+
+  const mustRender = phase !== 'hero' && !(continuity.showWorldReveal && continuity.revealOpacity >= 0.75 && hidden);
+  if (!mustRender && phase !== 'hero') {
+    return null;
+  }
 
   const byWord = isMobileFit;
   const lines = preset.titleLines.map((line) => splitLine(line, byWord));
@@ -57,21 +74,27 @@ export function TitlePortalTransition({
         '--world-accent': preset.accent,
         '--break-progress': revealRuntime.breakProgress,
         '--reveal-progress': revealRuntime.revealProgress,
+        opacity: continuity.titleOpacity,
       }) as CSSProperties,
-    [preset, revealRuntime.breakProgress, revealRuntime.revealProgress],
+    [continuity.titleOpacity, preset, revealRuntime.breakProgress, revealRuntime.revealProgress],
   );
 
-  const hideCta = revealRuntime.phase === 'breakaway' && revealRuntime.breakProgress > 0.3;
-  const hideMicrocopy = revealRuntime.phase === 'breakaway' && isMobileFit && typeof window !== 'undefined' && window.innerHeight <= 720;
+  const hideCta = continuity.titleMode === 'compact' || continuity.titleMode === 'ghost' || (revealRuntime.phase === 'breakaway' && revealRuntime.breakProgress > 0.3);
+  const hideMicrocopy =
+    continuity.titleMode === 'compact' ||
+    continuity.titleMode === 'ghost' ||
+    (isMobileFit && typeof window !== 'undefined' && window.innerHeight <= 700 && revealRuntime.localProgress > 0.22) ||
+    (revealRuntime.phase === 'breakaway' && isMobileFit && typeof window !== 'undefined' && window.innerHeight <= 720);
 
   let globalIndex = 0;
 
   return (
     <section
-      className={`title-portal ${hidden ? 'is-hidden' : ''} ${reducedMotion ? 'is-reduced-motion' : ''}`}
+      className={`title-portal ${hidden ? 'is-hidden' : ''} title-portal--${continuity.titleMode} ${reducedMotion ? 'is-reduced-motion' : ''}`}
       data-world={activeWorld.id}
       data-break-style={revealPreset.breakStyle}
       data-mobile-fit={String(isMobileFit)}
+      data-viewport-mode={viewportMode}
       data-phase={revealRuntime.phase}
       style={style}
       aria-hidden={hidden}

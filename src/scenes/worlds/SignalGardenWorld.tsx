@@ -11,7 +11,8 @@ interface SignalGardenWorldProps {
 }
 
 export function SignalGardenWorld({ opacity, objectCount, isMobileFit }: SignalGardenWorldProps) {
-  const stemCount = Math.max(6, Math.floor(objectCount * 0.4));
+  const stemCount = Math.max(5, Math.floor(objectCount * 0.32));
+  const pulseNodeCount = Math.max(16, Math.floor(objectCount * 0.7));
   const nodes = useMemo(
     () =>
       Array.from({ length: stemCount }, (_, i) => ({
@@ -40,6 +41,12 @@ export function SignalGardenWorld({ opacity, objectCount, isMobileFit }: SignalG
         <mesh key={arc} position={[0, 0.9 + arc * 0.2, -7.4 - arc * 0.4]} rotation={[0, 0, 0.2 - arc * 0.2]}>
           <torusGeometry args={[1.2 + arc * 0.5, 0.008, 6, 64, 2.5]} />
           <meshBasicMaterial color="#54d8ff" transparent opacity={0.32 * opacity} />
+        </mesh>
+      ))}
+      {Array.from({ length: pulseNodeCount }).map((_, i) => (
+        <mesh key={`pulse-${i}`} position={[Math.sin(i * 0.65) * (isMobileFit ? 1.4 : 2), -0.1 + (i % 8) * 0.22, -7.1 - (i % 5) * 0.38]}>
+          <sphereGeometry args={[0.026, 8, 8]} />
+          <meshBasicMaterial color="#aef2ff" transparent opacity={0.42 * opacity} />
         </mesh>
       ))}
     </group>

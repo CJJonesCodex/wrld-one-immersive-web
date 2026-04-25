@@ -1,4 +1,3 @@
-import { getWorldRevealPreset } from '../data/worldRevealPresets';
 import type { VfxPreset } from '../data/worldVfxPresets';
 import type { WorldRevealRuntime } from '../types/reveal';
 import type { FeaturedWorld, QualityLevel } from '../types/world';
@@ -8,42 +7,60 @@ import { CoreChamberWorld } from './worlds/CoreChamberWorld';
 import { AuroraPassageWorld } from './worlds/AuroraPassageWorld';
 import { RiftBloomWorld } from './worlds/RiftBloomWorld';
 import { FutureWorld } from './worlds/FutureWorld';
+import type { VisualContinuityState } from '../systems/useVisualContinuity';
 
 interface WorldRevealStageProps {
   activeWorld: FeaturedWorld;
   revealRuntime: WorldRevealRuntime;
   vfxPreset: VfxPreset;
+  continuity: VisualContinuityState;
   quality: QualityLevel;
   isMobileFit: boolean;
   reducedMotion: boolean;
-  drawerOpen?: boolean;
-  detailOpen?: boolean;
+  drawerOpen: boolean;
+  detailOpen: boolean;
 }
 
-export function WorldRevealStage({ activeWorld, revealRuntime, quality, isMobileFit, reducedMotion, drawerOpen = false, detailOpen = false }: WorldRevealStageProps) {
-  const revealPreset = getWorldRevealPreset(activeWorld.id);
-  const baseCount = revealPreset.worldObjectCount[quality];
-  const objectCount = isMobileFit ? Math.floor(baseCount * 0.88) : baseCount;
-  const introGate = revealRuntime.breakProgress > 0.05 ? 1 : 0;
-  const dimmer = drawerOpen || detailOpen ? 0.35 : 1;
-  const opacity = introGate * revealRuntime.revealProgress * dimmer;
+export function WorldRevealStage({ activeWorld, revealRuntime, quality, isMobileFit, reducedMotion, continuity, drawerOpen, detailOpen }: WorldRevealStageProps) {
+  if (!continuity.showWorldReveal && continuity.showHero) return null;
 
-  if (opacity <= 0.001) return null;
+  const opacityFloor = revealRuntime.phase === 'revealed' || revealRuntime.phase === 'exit' ? 0.75 : 0.1;
+  const overlayFloor = drawerOpen || detailOpen ? 0.16 : 0;
+  const opacity = Math.max(overlayFloor, Math.max(opacityFloor, continuity.revealOpacity));
+  const scale = isMobileFit ? 0.84 : 1;
 
+  const shared = {
+    opacity,
+    quality,
+    isMobileFit,
+    reducedMotion,
+  };
+
+  let worldNode: JSX.Element | null = null;
   switch (activeWorld.id) {
     case 'living-macro':
-      return <LivingMacroWorld opacity={opacity} objectCount={objectCount} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
+      worldNode = <LivingMacroWorld {...shared} objectCount={quality === 'low' ? 18 : quality === 'medium' ? 28 : 42} />;
+      break;
     case 'signal-garden':
-      return <SignalGardenWorld opacity={opacity} objectCount={objectCount} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
+      worldNode = <SignalGardenWorld {...shared} objectCount={quality === 'low' ? 16 : quality === 'medium' ? 26 : 40} />;
+      break;
     case 'core-chamber':
-      return <CoreChamberWorld opacity={opacity} objectCount={objectCount} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
+      worldNode = <CoreChamberWorld {...shared} objectCount={quality === 'low' ? 12 : quality === 'medium' ? 20 : 34} />;
+      break;
     case 'aurora-passage':
-      return <AuroraPassageWorld opacity={opacity} objectCount={objectCount} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
+      worldNode = <AuroraPassageWorld {...shared} objectCount={quality === 'low' ? 10 : quality === 'medium' ? 18 : 26} />;
+      break;
     case 'rift-bloom':
-      return <RiftBloomWorld opacity={opacity} objectCount={objectCount} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
+      worldNode = <RiftBloomWorld {...shared} objectCount={quality === 'low' ? 12 : quality === 'medium' ? 20 : 30} />;
+      break;
     case 'future-world':
-      return <FutureWorld opacity={opacity} objectCount={objectCount} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
+      worldNode = <FutureWorld {...shared} objectCount={quality === 'low' ? 24 : quality === 'medium' ? 36 : 60} />;
+      break;
     default:
-      return null;
+      worldNode = null;
+      break;
   }
+
+  if (!worldNode) return null;
+  return <group scale={scale}>{worldNode}</group>;
 }

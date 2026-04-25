@@ -7,11 +7,12 @@ interface ScrollbarNavProps {
   progress: number;
   onNavigate: (worldId: WorldId) => void;
   orientation?: 'vertical' | 'horizontal';
+  isMobileFit?: boolean;
 }
 
-export function ScrollbarNav({ worlds, activeWorldId, progress, onNavigate, orientation = 'vertical' }: ScrollbarNavProps) {
+export function ScrollbarNav({ worlds, activeWorldId, progress, onNavigate, orientation = 'vertical', isMobileFit = false }: ScrollbarNavProps) {
   return (
-    <div className="scrollbar-nav" data-orientation={orientation}>
+    <div className={`scrollbar-nav ${isMobileFit ? 'is-mobile-fit' : ''}`} data-orientation={orientation}>
       <div className="scrollbar-nav__track">
         <div className="scrollbar-nav__fill" style={orientation === 'vertical' ? { height: `${progress * 100}%` } : { width: `${progress * 100}%` }} />
       </div>

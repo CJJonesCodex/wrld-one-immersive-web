@@ -1,63 +1,69 @@
-# WRLD ONE — Phase 5.9 Title Portal Breakaway World Reveals
+# WRLD ONE — Phase 5.10 Blank-State Rescue + Mobile Toggle
 
-## Phase 5.9 summary
-Phase 5.9 upgrades the title-vfx experience from static title cards to **title portals**. Each active world title appears as a large readable monument first, then breaks apart via world-specific choreography to reveal a true abstract 3D world behind it.
+## Phase 5.10 summary
+Phase 5.10 is a stabilization pass on the title portal pipeline. The core goal is simple: **no blank visual states** between hero, title, breakaway, and revealed world.
 
-## Title-as-portal concept
-- Typography is the door.
-- VFX is the unlocking motion.
-- The revealed world is behind the broken title.
+## Blank-state rescue
+- Added an explicit visual continuity contract so post-hero states always keep either title or reveal visible.
+- Added a non-negotiable guard that prevents title disappearance until reveal visibility is strong enough.
+- Continuity now wins over runtime phase mismatch to avoid cream-background dead zones.
 
-## Reveal runtime phases
-1. `pre`
-2. `intro`
-3. `hold`
-4. `breakaway`
-5. `revealed`
-6. `exit`
+## Mobile Version toggle
+- Added a persistent mode switch:
+  - `MOBILE VERSION` when in cinematic mode.
+  - `CINEMATIC VERSION` when in mobile-fit mode.
+- Preference is saved in `localStorage` under `wrld-one-viewport-mode`.
+- Default behavior:
+  - phone widths (`<= 820px`) default to mobile-fit.
+  - wider viewports default to cinematic.
 
-The runtime is scroll-driven and reversible. If users scroll backward, title fragments and world reveal values reverse smoothly.
+## Visual continuity state
+- Introduced `getVisualContinuityState` for title/reveal/particles visibility and opacity.
+- Uses scene phase + reveal runtime to ensure smooth transitions:
+  - hero
+  - intro/hold
+  - breakaway
+  - revealed
+  - exit
+  - dead-zone fallback
 
-## Per-world breakaway styles
-1. Living Macro → dew dissolve.
-2. Signal Garden → signal slice.
-3. Core Chamber → halo collapse.
-4. Aurora Passage → ribbon smear.
-5. Rift Bloom → petal aperture.
-6. Future World → constellation deconstruct.
+## Non-negotiable no-blank invariant
+```ts
+// NON-NEGOTIABLE: the title cannot disappear until the active world reveal is visible.
+// This prevents blank cream-background states during scroll transitions.
+```
 
-## Per-world abstract reveal stages
-1. Living Macro → botanical dew field.
-2. Signal Garden → glass signal flora.
-3. Core Chamber → calm halo engine.
-4. Aurora Passage → chromatic ribbon corridor.
-5. Rift Bloom → portal flower aperture.
-6. Future World → coordinate constellation field.
+Enforced outcomes:
+- no non-hero state where both title and reveal are hidden;
+- title hidden only when reveal is visible enough;
+- compact fallback title appears when reveal visibility is uncertain.
 
-## Mobile-fit safety
-- One world reveal active at a time.
-- Reduced density for particles/object counts.
-- Title fragmentation can use safer chunking in mobile-fit.
-- Title/CTA remain usable before breakaway.
-- Avoid horizontal overflow.
+## Active-world-relative reveal timing
+- Reveal timing now derives from each active world's `focusRange` (with local padding) rather than only absolute preset windows.
+- Runtime phases remain scroll-derived and reversible for backward scroll reconstruction.
 
-## Reduced-motion behavior
-- Dramatic shatter/scatter is softened.
-- Breakaway uses fade/short slide behavior.
-- World reveal fades in softly.
-- Particle density is heavily reduced.
+## WorldRevealStage visibility rules
+- World reveal renders for active world in title-vfx mode outside hero.
+- Opacity is continuity-driven.
+- Revealed/exit phases hold strong reveal visibility.
+- Mobile-fit reduces density/scale while keeping at least one clear major shape per world.
 
-## Performance notes
-- Keep Vite + React + TypeScript + R3F.
-- Keep title-vfx mode and media-card fallback mode.
-- Keep existing VFX preset systems.
-- One active reveal system only.
-- Dispose/avoid heavy hidden VFX work.
-- `npm run build` must pass.
+## Mobile-fit discovery rules
+- Standalone top-right toggle is shown when viewport height is `>= 720px` or on desktop.
+- On shorter phone viewports (`< 720px`), toggle is shown inside the mobile drawer near the top.
 
-## Future upgrades
-1. Replace abstract worlds with custom GLB environments.
-2. Add filmed media reveals after title break.
-3. Add depth-map reveal shaders.
-4. Add GSAP timeline smoothing (if needed).
-5. Strengthen sound-reactive reveals after performance testing.
+## QA checklist
+- Open site on phone.
+- Confirm Mobile Version toggle is visible or inside menu.
+- Scroll from Living Macro forward.
+- Confirm title does not disappear into blank.
+- Confirm world reveal remains visible.
+- Confirm breakaway particles appear.
+- Scroll backward and confirm title returns.
+- Test all six worlds.
+- Confirm npm run build passes.
+
+## Build
+```bash
+npm run build
+```
