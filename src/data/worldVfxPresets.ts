@@ -22,6 +22,8 @@ export interface WorldVfxPreset {
   motionWords: string[];
 }
 
+export type VfxPreset = WorldVfxPreset;
+
 export const worldVfxPresets: Record<WorldId, WorldVfxPreset> = {
   'living-macro': {
     worldId: 'living-macro',
