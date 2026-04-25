@@ -49,22 +49,27 @@ export function TitlePortalTransition({
   if (DEFAULT_VISUAL_MODE !== 'title-vfx') return null;
   const revealPreset = getWorldRevealPreset(activeWorld.id);
 
-  const drawerOwnsScreen = (drawerOpen || detailOpen || Boolean(selectedWorldId)) && continuity.revealOpacity >= 0.16;
-  const mayHideForReveal = !continuity.showTitlePortal && continuity.revealOpacity >= 0.75;
-  const hidden = phase === 'hero' || drawerOwnsScreen || mayHideForReveal;
+  const hidden = phase === 'hero';
+  const resolvedTitleMode =
+    !continuity.showHero && continuity.titleMode === 'hidden'
+      ? revealRuntime.phase === 'revealed' || revealRuntime.phase === 'exit'
+        ? 'compact'
+        : 'ghost'
+      : continuity.titleMode;
 
-  if (hidden && phase !== 'hero' && !(continuity.showWorldReveal && continuity.revealOpacity >= 0.75)) {
-    // keep title alive in compact mode until reveal is definitely visible
+  let safeTitleOpacity = continuity.titleOpacity;
+  if (phase !== 'hero') {
+    safeTitleOpacity = Math.max(safeTitleOpacity, 0.35);
   }
 
-  const mustRender = phase !== 'hero' && !(continuity.showWorldReveal && continuity.revealOpacity >= 0.75 && hidden);
-  if (!mustRender && phase !== 'hero') {
-    return null;
+  if (drawerOpen || detailOpen || selectedWorldId) {
+    safeTitleOpacity = Math.max(0.12, Math.min(safeTitleOpacity, 0.2));
   }
 
   const byWord = isMobileFit;
   const lines = preset.titleLines.map((line) => splitLine(line, byWord));
   const totalFragments = lines.reduce((sum, line) => sum + line.length, 0);
+  const showFallbackTitle = revealRuntime.breakProgress > 0.55 || revealRuntime.phase === 'revealed' || revealRuntime.phase === 'exit';
 
   const style = useMemo(
     () =>
@@ -74,15 +79,15 @@ export function TitlePortalTransition({
         '--world-accent': preset.accent,
         '--break-progress': revealRuntime.breakProgress,
         '--reveal-progress': revealRuntime.revealProgress,
-        opacity: continuity.titleOpacity,
+        opacity: safeTitleOpacity,
       }) as CSSProperties,
-    [continuity.titleOpacity, preset, revealRuntime.breakProgress, revealRuntime.revealProgress],
+    [preset, revealRuntime.breakProgress, revealRuntime.revealProgress, safeTitleOpacity],
   );
 
-  const hideCta = continuity.titleMode === 'compact' || continuity.titleMode === 'ghost' || (revealRuntime.phase === 'breakaway' && revealRuntime.breakProgress > 0.3);
+  const hideCta = resolvedTitleMode === 'compact' || resolvedTitleMode === 'ghost' || (revealRuntime.phase === 'breakaway' && revealRuntime.breakProgress > 0.3);
   const hideMicrocopy =
-    continuity.titleMode === 'compact' ||
-    continuity.titleMode === 'ghost' ||
+    resolvedTitleMode === 'compact' ||
+    resolvedTitleMode === 'ghost' ||
     (isMobileFit && typeof window !== 'undefined' && window.innerHeight <= 700 && revealRuntime.localProgress > 0.22) ||
     (revealRuntime.phase === 'breakaway' && isMobileFit && typeof window !== 'undefined' && window.innerHeight <= 720);
 
@@ -90,7 +95,7 @@ export function TitlePortalTransition({
 
   return (
     <section
-      className={`title-portal ${hidden ? 'is-hidden' : ''} title-portal--${continuity.titleMode} ${reducedMotion ? 'is-reduced-motion' : ''}`}
+      className={`title-portal ${hidden ? 'is-hidden' : ''} title-portal--${resolvedTitleMode} ${reducedMotion ? 'is-reduced-motion' : ''}`}
       data-world={activeWorld.id}
       data-break-style={revealPreset.breakStyle}
       data-mobile-fit={String(isMobileFit)}
@@ -100,7 +105,7 @@ export function TitlePortalTransition({
       aria-hidden={hidden}
     >
       <p className="title-portal__eyebrow">{preset.eyebrow}</p>
-      <h1 className="title-portal__title">
+      <h1 className="title-portal__title title-portal__title--fragments">
         {lines.map((line, lineIndex) => (
           <span className="title-portal__line" key={`line-${lineIndex}`}>
             {line.map((fragment) => {
@@ -136,6 +141,10 @@ export function TitlePortalTransition({
             })}
           </span>
         ))}
+      </h1>
+      <h1 className={`title-portal__title title-portal__title--fallback ${showFallbackTitle ? 'is-visible' : ''}`} aria-hidden={!showFallbackTitle}>
+        <span className="title-portal__line">{preset.titleLines[0]}</span>
+        {preset.titleLines[1] ? <span className="title-portal__line">{preset.titleLines[1]}</span> : null}
       </h1>
       <p className={`title-portal__microcopy ${hideMicrocopy ? 'is-hidden' : ''}`}>{preset.microcopy}</p>
       <button className={`title-portal__cta ${hideCta ? 'is-hidden' : ''}`} onClick={onView}>

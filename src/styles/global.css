@@ -329,16 +329,35 @@ button { font: inherit; cursor: pointer; }
   transition: opacity 320ms var(--ease-soft);
 }
 
-.title-portal.is-hidden { opacity: 0; }
+.title-portal.is-hidden[data-phase='hero'] { opacity: 0; }
 .title-portal--compact { top: 15vh; }
 .title-portal--compact .title-portal__title { font-size: clamp(2.8rem, 9.6vw, 6rem); line-height: 0.88; letter-spacing: -0.055em; }
 .title-portal--compact .title-portal__microcopy,
 .title-portal--compact .title-portal__cta { display: none; }
-.title-portal--ghost .title-portal__title { opacity: 0.12; font-size: clamp(3rem, 11vw, 7rem); }
+.title-portal--ghost .title-portal__title { opacity: 0.38; font-size: clamp(3rem, 11vw, 7rem); }
+.title-portal--compact .title-portal__title { opacity: 0.42; transform: scale(0.72); transform-origin: left top; }
+.title-portal--ghost .title-portal__microcopy,
+.title-portal--compact .title-portal__microcopy,
+.title-portal--ghost .title-portal__cta,
+.title-portal--compact .title-portal__cta { display: none; }
 .title-portal--breaking .title-portal__title { opacity: calc(1 - var(--break-progress)); }
 .title-portal__eyebrow { margin: 0 0 12px; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
 .title-portal__title { margin: 0; font-size: clamp(6rem, 18vw, 18rem); line-height: 0.76; letter-spacing: -0.095em; font-weight: 760; text-transform: uppercase; color: transparent; background: linear-gradient(120deg, var(--world-primary), var(--world-secondary), var(--world-accent)); -webkit-background-clip: text; background-clip: text; max-width: 96vw; }
 .title-portal__line { display: block; white-space: nowrap; }
+.title-portal__title--fallback {
+  position: absolute;
+  inset: 0 auto auto 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms var(--ease-soft);
+}
+.title-portal__title--fallback.is-visible {
+  opacity: 0.36;
+}
+.title-portal[data-phase='revealed'] .title-portal__title--fallback.is-visible,
+.title-portal[data-phase='exit'] .title-portal__title--fallback.is-visible {
+  opacity: 0.42;
+}
 .title-fragment { display: inline-block; will-change: transform, opacity, filter; transform-origin: center; transition: transform 120ms linear, opacity 120ms linear, filter 120ms linear; }
 .title-portal__microcopy { margin: 18px 0 0; max-width: 360px; font-size: 13px; line-height: 1.45; color: var(--muted); }
 .title-portal__cta { pointer-events: auto; margin-top: 18px; height: 34px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.42); backdrop-filter: blur(16px); color: var(--ink); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; transition: opacity 180ms var(--ease-soft); }
@@ -385,9 +404,7 @@ button { font: inherit; cursor: pointer; }
   text-underline-offset: 0.08em;
 }
 
-.title-portal[data-phase='breakaway'] .title-portal__title { opacity: calc(1 - var(--break-progress)); }
-.title-portal[data-phase='revealed'] .title-portal__title,
-.title-portal[data-phase='exit'] .title-portal__title { opacity: calc(0.22 * (1 - var(--reveal-progress))); }
+.title-portal[data-phase='breakaway'] .title-portal__title--fragments { opacity: max(0.35, calc(1 - var(--break-progress))); }
 
 @media (max-width: 820px) {
   .title-portal { left: 16px; right: 16px; top: 21vh; }
