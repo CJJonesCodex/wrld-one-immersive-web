@@ -17,6 +17,7 @@ import type { VfxPreset } from '../data/worldVfxPresets';
 import { getWorldRevealPreset } from '../data/worldRevealPresets';
 import { TitleBreakParticles } from './TitleBreakParticles';
 import { WorldRevealStage } from './WorldRevealStage';
+import type { VisualContinuityState } from '../systems/useVisualContinuity';
 
 interface WorldProps {
   progress: number;
@@ -33,11 +34,31 @@ interface WorldProps {
   mobileDrawerOpen: boolean;
   detailOpen: boolean;
   isMobile: boolean;
+  isMobileFit: boolean;
   revealRuntime: WorldRevealRuntime;
   vfxPreset: VfxPreset;
+  continuity: VisualContinuityState;
 }
 
-export function World({ progress, activeWorld, quality, pointer, sensor, onSelectWorld, haptics, worlds, reducedMotion, phaseState, mobileDrawerOpen, detailOpen, isMobile, revealRuntime, vfxPreset }: WorldProps) {
+export function World({
+  progress,
+  activeWorld,
+  quality,
+  pointer,
+  sensor,
+  onSelectWorld,
+  haptics,
+  worlds,
+  reducedMotion,
+  phaseState,
+  mobileDrawerOpen,
+  detailOpen,
+  isMobile,
+  isMobileFit,
+  revealRuntime,
+  vfxPreset,
+  continuity,
+}: WorldProps) {
   const titleVfxMode = DEFAULT_VISUAL_MODE === 'title-vfx';
   const hideSilhouetteHtml = detailOpen || (isMobile && mobileDrawerOpen) || titleVfxMode;
   const revealPreset = getWorldRevealPreset(activeWorld.id);
@@ -68,8 +89,9 @@ export function World({ progress, activeWorld, quality, pointer, sensor, onSelec
             activeWorld={activeWorld}
             revealRuntime={revealRuntime}
             vfxPreset={vfxPreset}
+            continuity={continuity}
             quality={quality}
-            isMobileFit={isMobile}
+            isMobileFit={isMobileFit}
             reducedMotion={reducedMotion}
             drawerOpen={mobileDrawerOpen}
             detailOpen={detailOpen}
@@ -78,9 +100,10 @@ export function World({ progress, activeWorld, quality, pointer, sensor, onSelec
             activeWorld={activeWorld}
             revealPreset={revealPreset}
             revealRuntime={revealRuntime}
+            continuity={continuity}
             vfxPreset={vfxPreset}
             quality={quality}
-            isMobileFit={isMobile}
+            isMobileFit={isMobileFit}
             reducedMotion={reducedMotion}
           />
         </>

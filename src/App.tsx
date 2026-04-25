@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { featuredWorlds, getWorldById } from './data/featuredWorlds';
 import { World } from './scenes/World';
 import { useScrollProgress } from './systems/useScrollProgress';
@@ -19,6 +19,10 @@ import { getScenePhase } from './systems/useScenePhase';
 import { TitlePortalTransition } from './components/TitlePortalTransition';
 import { getWorldVfxPreset } from './data/worldVfxPresets';
 import { useWorldRevealRuntime } from './systems/useWorldRevealRuntime';
+import { useViewportMode } from './systems/useViewportMode';
+import { ViewportModeToggle } from './components/ViewportModeToggle';
+import { getVisualContinuityState } from './systems/useVisualContinuity';
+import { logContinuityWarnings } from './utils/devWarnings';
 
 function App() {
   const [selectedWorldId, setSelectedWorldId] = useState<WorldId | null>(null);
@@ -31,20 +35,39 @@ function App() {
   const haptics = useHaptics();
   const sensor = useDeviceSensor();
   const reducedMotion = useReducedMotion();
-  const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 820 : false;
+  const viewportMode = useViewportMode();
 
   const selectedWorld = useMemo(() => (selectedWorldId ? getWorldById(selectedWorldId) ?? null : null), [selectedWorldId]);
-  const phaseState = getScenePhase(progress, isMobile);
-  const revealRuntime = useWorldRevealRuntime({ activeWorldId: activeWorld.id, progress });
+  const phaseState = getScenePhase(progress, viewportMode.isPhoneViewport);
+  const revealRuntime = useWorldRevealRuntime({ activeWorld, progress });
+  const continuity = getVisualContinuityState({
+    progress,
+    scenePhase: phaseState.phase,
+    revealPhase: revealRuntime.phase,
+    breakProgress: revealRuntime.breakProgress,
+    revealProgress: revealRuntime.revealProgress,
+    exitProgress: revealRuntime.exitProgress,
+    drawerOpen,
+    detailOpen: Boolean(selectedWorld),
+  });
   const activePreset = getWorldVfxPreset(activeWorld.id);
+
+  useEffect(() => {
+    logContinuityWarnings({
+      continuity,
+      scenePhase: phaseState.phase,
+      viewportMode: viewportMode.mode,
+      activeWorld,
+    });
+  }, [activeWorld, continuity, phaseState.phase, viewportMode.mode]);
 
   const sceneVeilOpacity = selectedWorld ? 0.28 : drawerOpen ? 0.22 : phaseState.showHero ? 0.18 : 0;
 
   return (
-    <main className="site-shell">
+    <main className={`site-shell site-shell--${viewportMode.mode}`} data-viewport-mode={viewportMode.mode}>
       <div className="scroll-space" aria-hidden="true" />
       <div className="canvas-layer">
-        <Canvas className="world-canvas" dpr={[1, quality.dpr]} gl={{ antialias: quality.antialias, powerPreference: 'high-performance', alpha: true }} camera={{ near: 0.1, far: 60, fov: isMobile ? 46 : 42 }}>
+        <Canvas className="world-canvas" dpr={[1, quality.dpr]} gl={{ antialias: quality.antialias, powerPreference: 'high-performance', alpha: true }} camera={{ near: 0.1, far: 60, fov: viewportMode.isPhoneViewport ? 46 : 42 }}>
           <World
             progress={progress}
             activeWorld={activeWorld}
@@ -59,9 +82,11 @@ function App() {
             phaseState={phaseState}
             mobileDrawerOpen={drawerOpen}
             detailOpen={Boolean(selectedWorld)}
-            isMobile={isMobile}
+            isMobile={viewportMode.isPhoneViewport}
+            isMobileFit={viewportMode.isMobileFit}
             revealRuntime={revealRuntime}
             vfxPreset={activePreset}
+            continuity={continuity}
           />
         </Canvas>
       </div>
@@ -73,7 +98,9 @@ function App() {
           activeWorld={activeWorld}
           preset={activePreset}
           revealRuntime={revealRuntime}
-          isMobileFit={isMobile}
+          continuity={continuity}
+          viewportMode={viewportMode.mode}
+          isMobileFit={viewportMode.isMobileFit}
           reducedMotion={reducedMotion}
           drawerOpen={drawerOpen}
           detailOpen={Boolean(selectedWorld)}
@@ -84,6 +111,11 @@ function App() {
             setSelectedWorldId(activeWorld.id);
           }}
         />
+        {!phaseState.showHero && viewportMode.showStandaloneToggle && (
+          <div className="viewport-mode-toggle-wrap">
+            <ViewportModeToggle mode={viewportMode.mode} onToggle={viewportMode.toggleMode} />
+          </div>
+        )}
         <HUD
           progress={progress}
           activeWorld={activeWorld}
@@ -96,7 +128,11 @@ function App() {
           haptics={haptics}
           sensor={sensor}
           phaseState={phaseState}
-          isMobile={isMobile}
+          isMobile={viewportMode.isPhoneViewport}
+          viewportMode={viewportMode.mode}
+          isMobileFit={viewportMode.isMobileFit}
+          showStandaloneToggle={viewportMode.showStandaloneToggle}
+          onToggleViewportMode={viewportMode.toggleMode}
         />
         <WorldDetailPanel world={selectedWorld} onClose={() => setSelectedWorldId(null)} />
         <RecoloredCursor accent={activeWorld.colors.accent} />

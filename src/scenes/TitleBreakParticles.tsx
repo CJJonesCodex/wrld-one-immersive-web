@@ -4,46 +4,38 @@ import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, Points, Point
 import type { VfxPreset } from '../data/worldVfxPresets';
 import type { WorldRevealPreset, WorldRevealRuntime } from '../types/reveal';
 import type { FeaturedWorld, QualityLevel } from '../types/world';
+import type { VisualContinuityState } from '../systems/useVisualContinuity';
 
 interface TitleBreakParticlesProps {
   activeWorld: FeaturedWorld;
   revealPreset: WorldRevealPreset;
   revealRuntime: WorldRevealRuntime;
+  continuity: VisualContinuityState;
   vfxPreset: VfxPreset;
   quality: QualityLevel;
   isMobileFit: boolean;
   reducedMotion: boolean;
 }
 
-const styleColors: Record<WorldRevealPreset['breakStyle'], string[]> = {
-  'dew-dissolve': ['#7cffb2', '#ffd166', '#fffdf7'],
-  'signal-slice': ['#54d8ff', '#fffdf7'],
-  'halo-collapse': ['#a78bfa', '#ffd166'],
-  'ribbon-smear': ['#ff7a66', '#a78bfa', '#ffb4c8'],
-  'petal-aperture': ['#ffd166', '#54d8ff', '#fffdf7'],
-  'constellation-deconstruct': ['#7cffb2', '#fffdf7'],
-};
-
-export function TitleBreakParticles({ revealPreset, revealRuntime, quality, isMobileFit, reducedMotion }: TitleBreakParticlesProps) {
+export function TitleBreakParticles({ revealPreset, revealRuntime, continuity, vfxPreset, quality, isMobileFit, reducedMotion }: TitleBreakParticlesProps) {
   const pointsRef = useRef<Points<BufferGeometry, PointsMaterial>>(null);
-  const shouldRender = revealRuntime.phase === 'breakaway' || revealRuntime.phase === 'revealed' || revealRuntime.phase === 'exit';
-  if (!shouldRender) return null;
+  if (!continuity.showBreakParticles) return null;
 
-  const density = isMobileFit ? revealPreset.mobileDensityScale : 1;
-  const motionScale = reducedMotion ? 0.25 : 1;
-  const count = Math.max(8, Math.floor(revealPreset.shardCount[quality] * density * (reducedMotion ? 0.25 : 1)));
+  const qualityMin = quality === 'low' ? 12 : quality === 'medium' ? 24 : 40;
+  const baseCount = Math.floor(revealPreset.shardCount[quality] * (isMobileFit ? 0.85 : 1) * (reducedMotion ? 0.65 : 1));
+  const count = Math.max(qualityMin, baseCount);
 
   const geometry = useMemo(() => {
     const geom = new BufferGeometry();
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
-    const palette = styleColors[revealPreset.breakStyle];
+    const palette = [vfxPreset.primary, vfxPreset.secondary, vfxPreset.accent];
 
     for (let i = 0; i < count; i += 1) {
       const p = i * 3;
-      positions[p] = (Math.sin(i * 1.37) * 1.6) / (isMobileFit ? 1.4 : 1);
-      positions[p + 1] = Math.cos(i * 1.11) * 0.62;
-      positions[p + 2] = -5.6 - (i % 7) * 0.22;
+      positions[p] = Math.sin(i * 1.13) * (isMobileFit ? 1.1 : 1.5);
+      positions[p + 1] = Math.cos(i * 1.27) * 0.52;
+      positions[p + 2] = -5.4 - (i % 6) * 0.18;
       const color = new Color(palette[i % palette.length]);
       colors[p] = color.r;
       colors[p + 1] = color.g;
@@ -53,17 +45,19 @@ export function TitleBreakParticles({ revealPreset, revealRuntime, quality, isMo
     geom.setAttribute('position', new BufferAttribute(positions, 3));
     geom.setAttribute('color', new BufferAttribute(colors, 3));
     return geom;
-  }, [count, isMobileFit, revealPreset.breakStyle]);
+  }, [count, isMobileFit, vfxPreset.accent, vfxPreset.primary, vfxPreset.secondary]);
 
-  const particleOpacity = Math.max(0, revealRuntime.breakProgress * (1 - revealRuntime.revealProgress * 0.8));
+  const rawOpacity = continuity.particlesOpacity;
+  const particleOpacity = isMobileFit ? Math.max(0.35, Math.min(0.65, rawOpacity)) : Math.max(0.55, Math.min(0.9, rawOpacity));
 
   useFrame(() => {
     if (!pointsRef.current) return;
     const positions = pointsRef.current.geometry.attributes.position as BufferAttribute;
+    const travel = isMobileFit ? 0.0011 : 0.0018;
     for (let i = 0; i < count; i += 1) {
       const p = i * 3;
-      const driftX = Math.sin(i * 0.7) * 0.002 * revealRuntime.breakProgress * motionScale;
-      const driftY = (revealPreset.breakStyle === 'dew-dissolve' ? 1 : -1) * 0.002 * revealRuntime.breakProgress * motionScale;
+      const driftX = Math.sin(i * 0.7) * travel * revealRuntime.breakProgress;
+      const driftY = (revealPreset.breakStyle === 'dew-dissolve' ? 1 : -1) * travel * revealRuntime.breakProgress;
       positions.array[p] += driftX;
       positions.array[p + 1] += driftY;
     }
@@ -72,15 +66,7 @@ export function TitleBreakParticles({ revealPreset, revealRuntime, quality, isMo
 
   return (
     <points ref={pointsRef} geometry={geometry} position={[0, 0.2, 0]}>
-      <pointsMaterial
-        size={reducedMotion ? 0.02 : 0.035}
-        sizeAttenuation
-        transparent
-        opacity={particleOpacity}
-        depthWrite={false}
-        vertexColors
-        blending={AdditiveBlending}
-      />
+      <pointsMaterial size={reducedMotion ? 0.016 : 0.03} sizeAttenuation transparent opacity={particleOpacity} depthWrite={false} vertexColors blending={AdditiveBlending} />
     </points>
   );
 }

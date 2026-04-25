@@ -11,7 +11,7 @@ interface FutureWorldProps {
 }
 
 export function FutureWorld({ opacity, objectCount, isMobileFit }: FutureWorldProps) {
-  const dots = Math.max(18, objectCount);
+  const dots = Math.max(24, objectCount);
   const points = useMemo(
     () =>
       Array.from({ length: dots }, (_, i) => ({
@@ -30,9 +30,9 @@ export function FutureWorld({ opacity, objectCount, isMobileFit }: FutureWorldPr
           <meshBasicMaterial color={i % 3 === 0 ? '#7cffb2' : '#fffdf7'} transparent opacity={0.55 * opacity} blending={AdditiveBlending} />
         </mesh>
       ))}
-      {[0, 1, 2, 3].map((l) => (
-        <mesh key={l} position={[0, -0.5 + l * 0.4, -7.9 - l * 0.22]}>
-          <planeGeometry args={[4 - l * 0.45, 0.01]} />
+      {Array.from({ length: 8 }).map((_, l) => (
+        <mesh key={l} position={[0, -0.65 + l * 0.21, -7.9 - l * 0.18]}>
+          <planeGeometry args={[4.2 - l * 0.28, 0.01]} />
           <meshBasicMaterial color="#95ffd1" transparent opacity={0.24 * opacity} />
         </mesh>
       ))}
