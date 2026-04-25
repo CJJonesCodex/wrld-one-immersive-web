@@ -2,6 +2,7 @@ import { getWorldRevealPreset } from '../data/worldRevealPresets';
 import type { VfxPreset } from '../data/worldVfxPresets';
 import type { WorldRevealRuntime } from '../types/reveal';
 import type { FeaturedWorld, QualityLevel } from '../types/world';
+import type { VisualContinuityState } from '../systems/visualContinuity';
 import { LivingMacroWorld } from './worlds/LivingMacroWorld';
 import { SignalGardenWorld } from './worlds/SignalGardenWorld';
 import { CoreChamberWorld } from './worlds/CoreChamberWorld';
@@ -13,6 +14,7 @@ interface WorldRevealStageProps {
   activeWorld: FeaturedWorld;
   revealRuntime: WorldRevealRuntime;
   vfxPreset: VfxPreset;
+  continuity: VisualContinuityState;
   quality: QualityLevel;
   isMobileFit: boolean;
   reducedMotion: boolean;
@@ -20,29 +22,32 @@ interface WorldRevealStageProps {
   detailOpen?: boolean;
 }
 
-export function WorldRevealStage({ activeWorld, revealRuntime, quality, isMobileFit, reducedMotion, drawerOpen = false, detailOpen = false }: WorldRevealStageProps) {
+export function WorldRevealStage({ activeWorld, revealRuntime, continuity, quality, isMobileFit, reducedMotion, drawerOpen = false, detailOpen = false }: WorldRevealStageProps) {
+  if (!continuity.showWorldReveal) return null;
+
   const revealPreset = getWorldRevealPreset(activeWorld.id);
   const baseCount = revealPreset.worldObjectCount[quality];
-  const objectCount = isMobileFit ? Math.floor(baseCount * 0.88) : baseCount;
-  const introGate = revealRuntime.breakProgress > 0.05 ? 1 : 0;
-  const dimmer = drawerOpen || detailOpen ? 0.35 : 1;
-  const opacity = introGate * revealRuntime.revealProgress * dimmer;
+  const mobileScale = isMobileFit ? Math.max(0.78, revealPreset.mobileDensityScale) : 1;
+  const objectCount = Math.max(isMobileFit ? 8 : 12, Math.floor(baseCount * mobileScale));
+  const dimmer = drawerOpen || detailOpen ? 0.42 : 1;
+  const runtimeBoost = revealRuntime.phase === 'revealed' || revealRuntime.phase === 'exit' ? 0.75 : 0;
+  const opacity = Math.max(continuity.revealOpacity, runtimeBoost) * dimmer;
 
   if (opacity <= 0.001) return null;
 
   switch (activeWorld.id) {
     case 'living-macro':
-      return <LivingMacroWorld opacity={opacity} objectCount={objectCount} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
+      return <LivingMacroWorld opacity={opacity} objectCount={Math.max(objectCount, isMobileFit ? 18 : 24)} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
     case 'signal-garden':
-      return <SignalGardenWorld opacity={opacity} objectCount={objectCount} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
+      return <SignalGardenWorld opacity={opacity} objectCount={Math.max(objectCount, isMobileFit ? 24 : 32)} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
     case 'core-chamber':
-      return <CoreChamberWorld opacity={opacity} objectCount={objectCount} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
+      return <CoreChamberWorld opacity={opacity} objectCount={Math.max(objectCount, isMobileFit ? 18 : 24)} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
     case 'aurora-passage':
-      return <AuroraPassageWorld opacity={opacity} objectCount={objectCount} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
+      return <AuroraPassageWorld opacity={opacity} objectCount={Math.max(objectCount, isMobileFit ? 14 : 20)} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
     case 'rift-bloom':
-      return <RiftBloomWorld opacity={opacity} objectCount={objectCount} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
+      return <RiftBloomWorld opacity={opacity} objectCount={Math.max(objectCount, isMobileFit ? 12 : 18)} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
     case 'future-world':
-      return <FutureWorld opacity={opacity} objectCount={objectCount} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
+      return <FutureWorld opacity={opacity} objectCount={Math.max(objectCount, isMobileFit ? 32 : 48)} quality={quality} isMobileFit={isMobileFit} reducedMotion={reducedMotion} />;
     default:
       return null;
   }
