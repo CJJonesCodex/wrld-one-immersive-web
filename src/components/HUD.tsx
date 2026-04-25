@@ -12,6 +12,7 @@ import type { DeviceSensorState } from '../systems/useDeviceSensor';
 import type { ScenePhaseState } from '../systems/useScenePhase';
 import { scrollToProgress } from '../systems/useScrollProgress';
 import { DEFAULT_VISUAL_MODE } from '../config/visualMode';
+import type { ViewportMode } from '../systems/useViewportMode';
 
 interface HUDProps {
   progress: number;
@@ -26,9 +27,13 @@ interface HUDProps {
   sensor: DeviceSensorState;
   phaseState: ScenePhaseState;
   isMobile: boolean;
+  isMobileFit: boolean;
+  viewportMode: ViewportMode;
+  onToggleViewportMode: () => void;
+  showViewportToggleInDrawer: boolean;
 }
 
-export function HUD({ progress, activeWorld, selectedWorld, featuredWorlds, onSelectWorld, onSetDrawerOpen, drawerOpen, sound, haptics, sensor, phaseState, isMobile }: HUDProps) {
+export function HUD({ progress, activeWorld, selectedWorld, featuredWorlds, onSelectWorld, onSetDrawerOpen, drawerOpen, sound, haptics, sensor, phaseState, isMobile, isMobileFit, viewportMode, onToggleViewportMode, showViewportToggleInDrawer }: HUDProps) {
   const nav = useMemo(
     () => [
       { label: 'Top', target: 0 },
@@ -42,10 +47,9 @@ export function HUD({ progress, activeWorld, selectedWorld, featuredWorlds, onSe
   const detailOpen = Boolean(selectedWorld);
   const titleVfxMode = DEFAULT_VISUAL_MODE === 'title-vfx';
   const showDesktopIndex = !titleVfxMode && !isMobile && phaseState.showFeaturedIndex && !detailOpen;
-  const showReadout = !titleVfxMode && phaseState.showActiveReadout && !(isMobile && (drawerOpen || detailOpen));
+  const showReadout = phaseState.showActiveReadout && !(isMobile && (drawerOpen || detailOpen));
   const showScrollbar = phaseState.showScrollbarNav && !(isMobile && (drawerOpen || detailOpen));
 
-  // Text-budget rule: centrally gate layers so hero / drawer / detail never compete with every HUD system.
   return (
     <>
       <div className="global-brand">
@@ -68,8 +72,8 @@ export function HUD({ progress, activeWorld, selectedWorld, featuredWorlds, onSe
       {!isMobile && !phaseState.showHero && <div className="sensory-controls-wrap"><SensoryControls sound={sound} haptics={haptics} sensor={sensor} activeAccent={activeWorld.colors.accent} /></div>}
 
       {showDesktopIndex && <FeaturedWorksIndex worlds={featuredWorlds} activeWorldId={activeWorld.id} onNavigate={onSelectWorld} />}
-      {showScrollbar && <ScrollbarNav worlds={featuredWorlds} activeWorldId={activeWorld.id} progress={progress} onNavigate={onSelectWorld} orientation={isMobile ? 'horizontal' : 'vertical'} />}
-      {showReadout && <ActiveWorldReadout world={activeWorld} progress={progress} isMobile={isMobile} />}
+      {showScrollbar && <ScrollbarNav worlds={featuredWorlds} activeWorldId={activeWorld.id} progress={progress} onNavigate={onSelectWorld} orientation={isMobile ? 'horizontal' : 'vertical'} isMobileFit={isMobileFit} />}
+      {showReadout && <ActiveWorldReadout world={activeWorld} progress={progress} isMobile={isMobile} isMobileFit={isMobileFit} />}
 
       <AudioVisualizer enabled={sound.enabled && !phaseState.showHero && !drawerOpen && !detailOpen} accent={activeWorld.colors.accent} />
 
@@ -83,6 +87,9 @@ export function HUD({ progress, activeWorld, selectedWorld, featuredWorlds, onSe
         haptics={haptics}
         sensor={sensor}
         activeAccent={activeWorld.colors.accent}
+        viewportMode={viewportMode}
+        onToggleViewportMode={onToggleViewportMode}
+        showViewportToggle={showViewportToggleInDrawer}
       />
     </>
   );
