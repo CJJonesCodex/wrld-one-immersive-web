@@ -16,7 +16,6 @@ import { RecoloredCursor } from './components/RecoloredCursor';
 import type { WorldId } from './types/world';
 import { useReducedMotion } from './systems/useReducedMotion';
 import { getScenePhase } from './systems/useScenePhase';
-import { TitlePortalTransition } from './components/TitlePortalTransition';
 import { getWorldVfxPreset } from './data/worldVfxPresets';
 import { useWorldRevealRuntime } from './systems/useWorldRevealRuntime';
 import { useViewportMode } from './systems/useViewportMode';
@@ -24,6 +23,7 @@ import { ViewportModeToggle } from './components/ViewportModeToggle';
 import { getVisualContinuityState } from './systems/useVisualContinuity';
 import { ScreenSpaceWorldReveal } from './components/ScreenSpaceWorldReveal';
 import { logContinuityWarnings } from './utils/devWarnings';
+import { StableWorldTitle } from './components/StableWorldTitle';
 
 function App() {
   const [selectedWorldId, setSelectedWorldId] = useState<WorldId | null>(null);
@@ -103,17 +103,16 @@ function App() {
           detailOpen={Boolean(selectedWorld)}
         />
         <HeroOverlay progress={progress} showHero={phaseState.showHero} />
-        <TitlePortalTransition
+        <StableWorldTitle
           activeWorld={activeWorld}
           preset={activePreset}
+          progress={progress}
+          phase={phaseState.phase}
           revealRuntime={revealRuntime}
           continuity={continuity}
-          viewportMode={viewportMode.mode}
           isMobileFit={viewportMode.isMobileFit}
-          reducedMotion={reducedMotion}
           drawerOpen={drawerOpen}
           detailOpen={Boolean(selectedWorld)}
-          phase={phaseState.phase}
           selectedWorldId={selectedWorldId}
           onView={() => {
             haptics.pulse(12);

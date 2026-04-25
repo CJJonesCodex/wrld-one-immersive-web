@@ -33,7 +33,7 @@ export function ScreenSpaceWorldReveal({
   detailOpen,
 }: ScreenSpaceWorldRevealProps) {
   const computedOpacity = useMemo(() => {
-    let nextOpacity = continuity.showHero ? 0 : Math.max(continuity.revealOpacity, 0.65);
+    let nextOpacity = continuity.showHero ? 0 : Math.max(continuity.revealOpacity, 0.55);
 
     if (!continuity.showHero && continuity.titleOpacity < 0.5) {
       nextOpacity = Math.max(nextOpacity, 0.85);
@@ -44,11 +44,13 @@ export function ScreenSpaceWorldReveal({
       revealRuntime.phase === 'revealed' ||
       revealRuntime.phase === 'exit'
     ) {
-      nextOpacity = Math.max(nextOpacity, 0.9);
+      nextOpacity = Math.max(nextOpacity, 0.75);
     }
 
     if (drawerOpen || detailOpen) {
-      nextOpacity = Math.max(0.22, nextOpacity * 0.5);
+      const drawerFloor =
+        revealRuntime.phase === 'breakaway' || revealRuntime.phase === 'revealed' || revealRuntime.phase === 'exit' ? 0.75 : 0.55;
+      nextOpacity = Math.max(drawerFloor, nextOpacity * 0.7);
     }
 
     if (continuity.showHero) {
