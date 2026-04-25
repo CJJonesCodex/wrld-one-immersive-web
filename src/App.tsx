@@ -24,6 +24,7 @@ import { getVisualContinuityState } from './systems/useVisualContinuity';
 import { ScreenSpaceWorldReveal } from './components/ScreenSpaceWorldReveal';
 import { logContinuityWarnings } from './utils/devWarnings';
 import { StableWorldTitle } from './components/StableWorldTitle';
+import { getWorldStage } from './systems/worldStageMap';
 
 function App() {
   const [selectedWorldId, setSelectedWorldId] = useState<WorldId | null>(null);
@@ -63,9 +64,15 @@ function App() {
   }, [activeWorld, continuity, phaseState.phase, viewportMode.mode]);
 
   const sceneVeilOpacity = selectedWorld ? 0.28 : drawerOpen ? 0.22 : phaseState.showHero ? 0.18 : 0;
+  const activeStage = getWorldStage(progress);
 
   return (
-    <main className={`site-shell site-shell--${viewportMode.mode}`} data-viewport-mode={viewportMode.mode}>
+    <main
+      className={`site-shell site-shell--${viewportMode.mode}`}
+      data-viewport-mode={viewportMode.mode}
+      data-active-world={activeWorld.id}
+      data-stage={activeStage.id}
+    >
       <div className="scroll-space" aria-hidden="true" />
       <div className="canvas-layer">
         <Canvas className="world-canvas" dpr={[1, quality.dpr]} gl={{ antialias: quality.antialias, powerPreference: 'high-performance', alpha: true }} camera={{ near: 0.1, far: 60, fov: viewportMode.isPhoneViewport ? 46 : 42 }}>
@@ -106,10 +113,7 @@ function App() {
         <StableWorldTitle
           activeWorld={activeWorld}
           preset={activePreset}
-          progress={progress}
           phase={phaseState.phase}
-          revealRuntime={revealRuntime}
-          continuity={continuity}
           isMobileFit={viewportMode.isMobileFit}
           drawerOpen={drawerOpen}
           detailOpen={Boolean(selectedWorld)}

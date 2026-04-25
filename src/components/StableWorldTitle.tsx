@@ -1,17 +1,12 @@
 import { useMemo, type CSSProperties } from 'react';
 import type { VfxPreset } from '../data/worldVfxPresets';
-import type { VisualContinuityState } from '../systems/useVisualContinuity';
 import type { ScenePhase } from '../systems/useScenePhase';
-import type { WorldRevealRuntime } from '../types/reveal';
 import type { FeaturedWorld, WorldId } from '../types/world';
 
 interface StableWorldTitleProps {
   activeWorld: FeaturedWorld;
   preset: VfxPreset;
-  progress: number;
   phase: ScenePhase;
-  revealRuntime: WorldRevealRuntime;
-  continuity: VisualContinuityState;
   isMobileFit: boolean;
   drawerOpen: boolean;
   detailOpen: boolean;
@@ -23,7 +18,6 @@ export function StableWorldTitle({
   activeWorld,
   preset,
   phase,
-  revealRuntime,
   isMobileFit,
   drawerOpen,
   detailOpen,
@@ -32,21 +26,8 @@ export function StableWorldTitle({
 }: StableWorldTitleProps) {
   const isHidden = phase === 'hero' || detailOpen || Boolean(selectedWorldId);
   const isDimmed = !isHidden && drawerOpen;
-
-  const baseOpacity = isHidden ? 0 : isDimmed ? 0.14 : 1;
-  const stableOpacity =
-    !isHidden &&
-    (revealRuntime.phase === 'breakaway' || revealRuntime.phase === 'revealed' || revealRuntime.phase === 'exit')
-      ? Math.max(0.88, baseOpacity)
-      : baseOpacity;
-
-  const showCta =
-    !isHidden &&
-    !isDimmed &&
-    (revealRuntime.phase === 'intro' ||
-      revealRuntime.phase === 'hold' ||
-      revealRuntime.phase === 'revealed' ||
-      revealRuntime.phase === 'exit');
+  const stableOpacity = isHidden ? 0 : isDimmed ? 0.14 : 1;
+  const showCta = !isHidden && !isDimmed;
 
   const style = useMemo(
     () =>

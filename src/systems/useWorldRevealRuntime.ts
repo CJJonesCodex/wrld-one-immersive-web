@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { WorldRevealRuntime } from '../types/reveal';
 import type { FeaturedWorld } from '../types/world';
 import { clamp01, smoothstep } from '../utils/math';
+import { getStageLocalProgress, WORLD_STAGES } from './worldStageMap';
 
 interface UseWorldRevealRuntimeArgs {
   activeWorld: FeaturedWorld;
@@ -14,10 +15,8 @@ function normalize(value: number, start: number, end: number): number {
 }
 
 export function getWorldRevealRuntime(activeWorld: FeaturedWorld, progress: number): WorldRevealRuntime {
-  const [focusStart, focusEnd] = activeWorld.scene.focusRange;
-  const localStart = Math.max(0, focusStart - 0.06);
-  const localEnd = Math.min(1, focusEnd + 0.08);
-  const localProgress = normalize(progress, localStart, localEnd);
+  const stage = WORLD_STAGES.find((entry) => entry.id === activeWorld.id) ?? WORLD_STAGES[0];
+  const localProgress = getStageLocalProgress(progress, stage);
 
   const introProgress = normalize(localProgress, 0, 0.18);
   const holdProgress = normalize(localProgress, 0.18, 0.38);
@@ -26,7 +25,7 @@ export function getWorldRevealRuntime(activeWorld: FeaturedWorld, progress: numb
   const exitProgress = normalize(localProgress, 0.92, 1);
 
   const phase: WorldRevealRuntime['phase'] =
-    localProgress < 0.001
+    progress < 0.16
       ? 'pre'
       : localProgress < 0.18
         ? 'intro'
