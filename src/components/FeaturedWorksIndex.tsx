@@ -1,5 +1,5 @@
 import type { FeaturedWorld, WorldId } from '../types/world';
-import { scrollToProgress } from '../systems/useScrollProgress';
+import { scrollToWorldSection } from '../systems/scrollToWorldSection';
 
 interface FeaturedWorksIndexProps {
   worlds: FeaturedWorld[];
@@ -17,7 +17,7 @@ export function FeaturedWorksIndex({ worlds, activeWorldId, onNavigate, variant 
           key={world.id}
           className={`featured-index__row tap-target ${world.id === activeWorldId ? 'is-active' : ''}`}
           onClick={() => {
-            scrollToProgress(world.scene.scrollTarget);
+            scrollToWorldSection(world.id);
             onNavigate(world.id);
           }}
           aria-label={`Navigate to ${world.title}`}

@@ -1,5 +1,5 @@
 import type { FeaturedWorld, WorldId } from '../types/world';
-import { scrollToProgress } from '../systems/useScrollProgress';
+import { scrollToWorldSection } from '../systems/scrollToWorldSection';
 
 interface ScrollbarNavProps {
   worlds: FeaturedWorld[];
@@ -22,7 +22,7 @@ export function ScrollbarNav({ worlds, activeWorldId, progress, onNavigate, orie
           className={`scrollbar-nav__tick tap-target ${world.id === activeWorldId ? 'is-active' : ''}`}
           style={orientation === 'vertical' ? { top: `${world.scene.scrollTarget * 100}%` } : { left: `${world.scene.scrollTarget * 100}%` }}
           onClick={() => {
-            scrollToProgress(world.scene.scrollTarget);
+            scrollToWorldSection(world.id);
             onNavigate(world.id);
           }}
           title={orientation === 'vertical' ? world.title : undefined}

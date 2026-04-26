@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { featuredWorlds, getWorldById } from './data/featuredWorlds';
 import { World } from './scenes/World';
 import { useScrollProgress } from './systems/useScrollProgress';
-import { useActiveWorld } from './systems/useActiveWorld';
 import { usePointerIntent } from './systems/usePointerIntent';
 import { useQuality } from './systems/useQuality';
 import { useAmbientSound } from './systems/useAmbientSound';
@@ -17,7 +16,6 @@ import type { WorldId } from './types/world';
 import { useReducedMotion } from './systems/useReducedMotion';
 import { getScenePhase } from './systems/useScenePhase';
 import { getWorldVfxPreset } from './data/worldVfxPresets';
-import { useWorldRevealRuntime } from './systems/useWorldRevealRuntime';
 import { useViewportMode } from './systems/useViewportMode';
 import { ViewportModeToggle } from './components/ViewportModeToggle';
 import { getVisualContinuityState } from './systems/useVisualContinuity';
@@ -25,12 +23,15 @@ import { ScreenSpaceWorldReveal } from './components/ScreenSpaceWorldReveal';
 import { logContinuityWarnings } from './utils/devWarnings';
 import { StableWorldTitle } from './components/StableWorldTitle';
 import { getWorldStage } from './systems/worldStageMap';
+import { useSectionActiveWorld } from './systems/useSectionActiveWorld';
+import { useSectionRevealRuntime } from './systems/useSectionRevealRuntime';
 
 function App() {
   const [selectedWorldId, setSelectedWorldId] = useState<WorldId | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { progress } = useScrollProgress();
-  const activeWorld = useActiveWorld(progress);
+  const sectionState = useSectionActiveWorld();
+  const activeWorld = getWorldById(sectionState.activeWorldId) ?? featuredWorlds[0];
   const pointer = usePointerIntent();
   const { quality } = useQuality();
   const sound = useAmbientSound();
@@ -41,7 +42,7 @@ function App() {
 
   const selectedWorld = useMemo(() => (selectedWorldId ? getWorldById(selectedWorldId) ?? null : null), [selectedWorldId]);
   const phaseState = getScenePhase(progress, viewportMode.isPhoneViewport);
-  const revealRuntime = useWorldRevealRuntime({ activeWorld, progress });
+  const revealRuntime = useSectionRevealRuntime({ activeWorld, sectionProgress: sectionState.sectionProgress });
   const continuity = getVisualContinuityState({
     progress,
     scenePhase: phaseState.phase,
@@ -71,9 +72,18 @@ function App() {
       className={`site-shell site-shell--${viewportMode.mode}`}
       data-viewport-mode={viewportMode.mode}
       data-active-world={activeWorld.id}
+      data-active-index={sectionState.activeIndex}
+      data-section-progress={sectionState.sectionProgress.toFixed(3)}
       data-stage={activeStage.id}
     >
-      <div className="scroll-space" aria-hidden="true" />
+      <div className="scroll-sections" aria-hidden="true">
+        <section className="world-scroll-section" data-world-id="living-macro" />
+        <section className="world-scroll-section" data-world-id="signal-garden" />
+        <section className="world-scroll-section" data-world-id="core-chamber" />
+        <section className="world-scroll-section" data-world-id="aurora-passage" />
+        <section className="world-scroll-section" data-world-id="rift-bloom" />
+        <section className="world-scroll-section" data-world-id="future-world" />
+      </div>
       <div className="canvas-layer">
         <Canvas className="world-canvas" dpr={[1, quality.dpr]} gl={{ antialias: quality.antialias, powerPreference: 'high-performance', alpha: true }} camera={{ near: 0.1, far: 60, fov: viewportMode.isPhoneViewport ? 46 : 42 }}>
           <World
