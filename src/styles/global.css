@@ -70,7 +70,16 @@ button { font: inherit; cursor: pointer; }
 .site-shell--mobile-fit .title-portal[data-world="core-chamber"] .title-portal__title {
   font-size: clamp(3.1rem, 15.7vw, 5.95rem);
 }
-.scroll-space { height: 700vh; }
+.scroll-sections {
+  position: relative;
+  z-index: 0;
+}
+
+.world-scroll-section {
+  height: 100svh;
+  min-height: 100vh;
+}
+
 .canvas-layer, .world-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; }
 .hud-layer { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
 .hud-layer button, .hud-layer a, .hud-layer [data-interactive='true'] { pointer-events: auto; }
@@ -181,7 +190,10 @@ button { font: inherit; cursor: pointer; }
 .tap-target { min-height: 44px; }
 
 @media (max-width: 820px) {
-  .scroll-space { height: 760vh; }
+  .world-scroll-section {
+    height: 112svh;
+    min-height: 112vh;
+  }
   .top-nav, .sensory-controls-wrap, .featured-index[data-variant='desktop'] { display: none; }
   .global-brand { left: 16px; top: 18px; font-size: 12px; }
   .global-brand div:last-child { display: none; }
